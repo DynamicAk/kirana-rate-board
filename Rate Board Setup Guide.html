@@ -1,0 +1,306 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Rate Board Setup Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: single column; file tree first, then numbered setup steps with copyable commands, then checks. */
+:root {
+  --bg: #fbf8f3; --surface: #ffffff; --fg: #231c14; --muted: #6a5e4f; --rule: #e6dccd;
+  --accent: #b45309; --accent-soft: #fdecd3; --ok: #1d6b4a; --ok-soft: #e2f1ea;
+  --warn: #b3261e; --warn-soft: #fbe9e7; --code-bg: #f1ebe0;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-head: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17120c; --surface: #211a12; --fg: #f1e9dc; --muted: #b3a48f; --rule: #3a2f22;
+    --accent: #f0a04b; --accent-soft: #3a2812; --ok: #5fc79a; --ok-soft: #163428;
+    --warn: #ff8a80; --warn-soft: #3a1c1a; --code-bg: #120d08; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17120c; --surface: #211a12; --fg: #f1e9dc; --muted: #b3a48f; --rule: #3a2f22;
+  --accent: #f0a04b; --accent-soft: #3a2812; --ok: #5fc79a; --ok-soft: #163428;
+  --warn: #ff8a80; --warn-soft: #3a1c1a; --code-bg: #120d08; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-block: 28px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--font-head); text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: clamp(26px, 6vw, 36px); }
+h2 { font-size: 21px; padding-bottom: 8px; border-bottom: 2px solid var(--rule); }
+h3 { font-size: 16px; }
+p { margin: 0; }
+section { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.lede { color: var(--muted); max-width: 62ch; margin-top: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+code { font-family: var(--font-mono); font-size: 13px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+.codewrap { position: relative; min-width: 0; }
+pre { background: var(--code-bg); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 14px 14px; overflow-x: auto; margin: 0; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.55; }
+pre code { background: none; padding: 0; font-size: inherit; }
+.copy { position: absolute; top: 6px; right: 6px; font: 600 11px var(--font-body); background: var(--surface); color: var(--fg); border: 1px solid var(--rule); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.copy:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.assume { background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 8px; padding: 14px 16px; }
+.assume h3 { color: var(--warn); margin-bottom: 6px; }
+.assume ul, .box ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+
+.tree { overflow-x: auto; }
+.tree table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14px; }
+.tree th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 6px 10px; border-bottom: 2px solid var(--rule); }
+.tree td { padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.tree td:first-child { font-family: var(--font-mono); font-size: 12.5px; white-space: nowrap; }
+.tree tr.dir td:first-child { font-weight: 600; color: var(--accent); }
+.tree .ind { padding-left: 20px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-left: 6px; }
+.tag.you { background: var(--accent-soft); color: var(--accent); }
+.tag.secret { background: var(--warn-soft); color: var(--warn); }
+
+.steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 22px; counter-reset: s; }
+.steps > li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+.steps > li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--bg); display: grid; place-items: center; font-weight: 700; font-size: 14px; font-family: var(--font-head); }
+.steps .body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.steps .body ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.where { color: var(--muted); font-size: 13px; }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+.box { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+.box h3 { margin-bottom: 6px; }
+.note { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 8px; padding: 12px 14px; font-size: 14px; }
+.faq dt { font-weight: 600; margin-top: 10px; }
+.faq dd { margin: 2px 0 0; color: var(--muted); }
+.summary { background: var(--ok-soft); border: 1px solid var(--ok); border-radius: 8px; padding: 16px 18px; }
+.summary h2 { border: 0; padding: 0; margin-bottom: 8px; }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">Setup guide</div>
+    <h1>Rate Board Setup Guide</h1>
+    <p class="lede">Your original rate list page now reads and saves its 125 items in a Firebase database. The screen looks the same. This page lists every file, then walks you through setup.</p>
+  </header>
+
+  <div class="assume">
+    <h3>Assumptions I made</h3>
+    <ul>
+      <li>Database is Firebase Firestore, as you suggested. Hosting is Netlify, with code on GitHub.</li>
+      <li>Each person has an email and password login. 2 or 3 are editors, the rest viewers.</li>
+      <li>The Reset and Save HTML buttons are removed. The data now lives in the database, so a page-level reset or self-copy no longer makes sense. Use the backup script instead.</li>
+      <li>I added a login screen, a Sign out button and a delete confirmation. Everything else on screen is unchanged.</li>
+      <li>Tailwind stays on its CDN script, as in your file. That keeps the look identical. It needs internet on first load, then it is cached.</li>
+      <li>Prices stay as text (for example <code>₹20 / ₹75</code>), since many items have several prices.</li>
+      <li>I could not test against a live Firebase project from here. I checked syntax, the 125 rows and that every button handler exists. Do the test list at the end after setup.</li>
+    </ul>
+  </div>
+
+  <section>
+    <h2>1. What is in the folder</h2>
+    <div class="tree">
+      <table>
+        <thead><tr><th>File</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr class="dir"><td>kirana-rate-board/</td><td>Whole project. Upload this folder to GitHub.</td></tr>
+          <tr><td class="ind">index.html</td><td>Page layout. Your original design, plus a login screen and delete confirmation.</td></tr>
+          <tr><td class="ind">app.js</td><td>All the logic: login, live data, search, filters, edit, add, delete, CSV export.</td></tr>
+          <tr><td class="ind">firebase-config.js <span class="tag you">you edit</span></td><td>Your Firebase keys. Paste them once.</td></tr>
+          <tr><td class="ind">data/synonyms.js</td><td>Search words, such as chilli to mirch and मिर्च. Add words here any time.</td></tr>
+          <tr><td class="ind">manifest.webmanifest</td><td>Name, colour and icons so phones can install it.</td></tr>
+          <tr><td class="ind">sw.js</td><td>Saves the app files on the phone so it opens offline.</td></tr>
+          <tr class="dir"><td class="ind">icons/</td><td>icon-192.png and icon-512.png (an orange ₹ tile). Replace with your shop logo if you like.</td></tr>
+          <tr><td class="ind">firestore.rules</td><td>Database security: viewers read, only editors change.</td></tr>
+          <tr><td class="ind">firebase.json</td><td>Lets the Firebase tool publish the rules.</td></tr>
+          <tr><td class="ind">netlify.toml</td><td>Netlify settings. No build step.</td></tr>
+          <tr><td class="ind">.gitignore</td><td>Stops secret files from going to GitHub.</td></tr>
+          <tr><td class="ind">README.md</td><td>Short version of this guide.</td></tr>
+          <tr class="dir"><td class="ind">scripts/</td><td>Python files you run on your laptop. Not part of the website.</td></tr>
+          <tr><td class="ind"><span style="padding-left:20px"></span>items.csv</td><td>Your 125 items, in notebook order.</td></tr>
+          <tr><td class="ind"><span style="padding-left:20px"></span>seed_firestore.py</td><td>One-time import of items.csv into the database.</td></tr>
+          <tr><td class="ind"><span style="padding-left:20px"></span>manage_users.py</td><td>Creates the logins and sets viewer or editor.</td></tr>
+          <tr><td class="ind"><span style="padding-left:20px"></span>backup_firestore.py</td><td>Saves a dated CSV copy of all prices.</td></tr>
+          <tr><td class="ind"><span style="padding-left:20px"></span>users.example.csv <span class="tag you">copy to users.csv</span></td><td>Template for your 10 logins.</td></tr>
+          <tr><td class="ind"><span style="padding-left:20px"></span>requirements.txt</td><td>Python package list (firebase-admin).</td></tr>
+          <tr><td class="ind">serviceAccountKey.json <span class="tag secret">secret</span></td><td>You download this from Firebase in step 4. Keep it on your laptop only. Never put it on GitHub.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. How the data is stored</h2>
+    <p>One collection called <code>items</code>. Each of your 125 array entries becomes one document. The old <code>uid</code> becomes <code>seq</code>, which keeps the notebook order.</p>
+    <div class="codewrap"><pre><code>items / item-0012
+  seq:          12
+  category:     "Spices & Masala"
+  itemName:     "लाल मिर्च साबुत (Lal Mirch Sabut)"
+  price:        "₹75"
+  amountOfItem: "250g (1 paw)"
+  updatedAt:    (server time)
+  updatedBy:    "owner@yourshop.com"</code></pre></div>
+    <p class="where">Adding an item between two others gets a sequence number halfway between them, so no other item has to be renumbered.</p>
+  </section>
+
+  <section>
+    <h2>3. Setup steps</h2>
+    <ol class="steps">
+      <li><div class="body">
+        <h3>Create the Firebase project</h3>
+        <ul>
+          <li>Go to <code>console.firebase.google.com</code> and click Add project. Name it, for example, <code>kirana-rate-board</code>. Turn Google Analytics off.</li>
+          <li>Build > Authentication > Get started > Email/Password > Enable > Save.</li>
+          <li>Build > Firestore Database > Create database > choose a region near you (Mumbai, <code>asia-south1</code>) > Production mode.</li>
+        </ul>
+      </div></li>
+      <li><div class="body">
+        <h3>Connect the web page to Firebase</h3>
+        <ul>
+          <li>Project settings (gear icon) > Your apps > the <code>&lt;/&gt;</code> Web icon > register the app (skip Firebase Hosting).</li>
+          <li>Copy the <code>firebaseConfig</code> values into <code>firebase-config.js</code>, replacing every <code>PASTE_...</code>.</li>
+        </ul>
+      </div></li>
+      <li><div class="body">
+        <h3>Publish the security rules</h3>
+        <ul>
+          <li>Firestore Database > Rules tab. Delete what is there, paste the contents of <code>firestore.rules</code>, click Publish.</li>
+        </ul>
+        <div class="note">This is what stops a viewer from changing prices. Anyone who is not given a role by the script in step 6 can neither read nor change anything.</div>
+      </div></li>
+      <li><div class="body">
+        <h3>Download the admin key (for your laptop)</h3>
+        <ul>
+          <li>Project settings > Service accounts > Generate new private key.</li>
+          <li>Save the file as <code>serviceAccountKey.json</code> in the main project folder, next to <code>index.html</code>. The <code>.gitignore</code> keeps it off GitHub.</li>
+        </ul>
+      </div></li>
+      <li><div class="body">
+        <h3>Install Python packages and load the 125 items</h3>
+        <div class="codewrap"><button class="copy" type="button">Copy</button><pre><code>cd scripts
+pip install -r requirements.txt
+python seed_firestore.py</code></pre></div>
+        <p class="where">You should see <code>Imported 125 items.</code> Check in Firestore Database > Data: the <code>items</code> collection shows 125 documents. Running it again is safe. It overwrites, it does not duplicate.</p>
+      </div></li>
+      <li><div class="body">
+        <h3>Create the logins and roles</h3>
+        <ul>
+          <li>Copy <code>users.example.csv</code> to <code>users.csv</code>. Put in your 10 people: email, a password, and <code>editor</code> or <code>viewer</code>.</li>
+        </ul>
+        <div class="codewrap"><button class="copy" type="button">Copy</button><pre><code>python manage_users.py</code></pre></div>
+        <p class="where">It prints one line per person. To change a role later, edit the file and run it again. That person signs out and in once.</p>
+      </div></li>
+      <li><div class="body">
+        <h3>Test on your laptop</h3>
+        <div class="codewrap"><button class="copy" type="button">Copy</button><pre><code>cd ..
+python -m http.server 8000</code></pre></div>
+        <p class="where">Open <code>http://localhost:8000</code>. Sign in as an editor and go through the test list below.</p>
+      </div></li>
+      <li><div class="body">
+        <h3>Put the code on GitHub</h3>
+        <div class="codewrap"><button class="copy" type="button">Copy</button><pre><code>git init
+git add .
+git commit -m "Kirana rate board"
+git branch -M main
+git remote add origin https://github.com/YOUR-NAME/kirana-rate-board.git
+git push -u origin main</code></pre></div>
+        <p class="where">Make the repository private. Before you push, run <code>git status</code> and confirm <code>serviceAccountKey.json</code> and <code>scripts/users.csv</code> are not listed.</p>
+      </div></li>
+      <li><div class="body">
+        <h3>Deploy on Netlify</h3>
+        <ul>
+          <li>Add new site > Import from Git > pick the repository.</li>
+          <li>Build command: leave empty. Publish directory: <code>.</code> (a single dot). Deploy.</li>
+          <li>Copy your new address, for example <code>yourshop.netlify.app</code>.</li>
+        </ul>
+      </div></li>
+      <li><div class="body">
+        <h3>Allow your Netlify address to log in</h3>
+        <ul>
+          <li>Firebase > Authentication > Settings > Authorized domains > Add domain > paste <code>yourshop.netlify.app</code>.</li>
+        </ul>
+        <div class="note">Without this step, the live site shows "Wrong email or password" even when the password is right.</div>
+      </div></li>
+      <li><div class="body">
+        <h3>Install on each phone</h3>
+        <ul>
+          <li>Open the Netlify link in Chrome, sign in, wait for the list to load once.</li>
+          <li>Chrome menu > Add to Home screen (or Install app).</li>
+          <li>Test it: turn on airplane mode and open the app. The list should still show.</li>
+        </ul>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>4. Test list after setup</h2>
+    <div class="grid2">
+      <div class="box"><h3>As an editor</h3><ul>
+        <li>All 125 items show, in the original order.</li>
+        <li>Search "chilli" shows Mirch items. Search "मिर्च" works too.</li>
+        <li>Edit Mode: change a price, press Enter. The status line shows Synced.</li>
+        <li>Open the page on a second phone. The new price appears within seconds.</li>
+        <li>Add an item, insert one below another, delete one (a confirm box appears).</li>
+        <li>Export CSV opens in Excel with Hindi text intact.</li>
+      </ul></div>
+      <div class="box"><h3>As a viewer</h3><ul>
+        <li>There is no Edit Mode button.</li>
+        <li>Search, category filter and A–Z / Z–A sort work.</li>
+        <li>In Firestore Rules Playground, a viewer write to <code>items</code> is denied.</li>
+      </ul></div>
+      <div class="box"><h3>Offline</h3><ul>
+        <li>Load once online, then switch on airplane mode.</li>
+        <li>The list still opens. The status line says Offline copy.</li>
+        <li>As an editor, change a price offline. It syncs when internet returns.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>5. If something goes wrong</h2>
+    <dl class="faq">
+      <dt>Page stays on "Loading…" after login</dt>
+      <dd>The account has no role. Run <code>manage_users.py</code> for that email, then sign out and in.</dd>
+      <dt>"Wrong email or password" on the live site only</dt>
+      <dd>Add the Netlify address under Authorized domains (step 10).</dd>
+      <dt>Status line says "Cannot read data"</dt>
+      <dd>Rules were not published (step 3), or the config in <code>firebase-config.js</code> is for a different project.</dd>
+      <dt>Phone keeps showing an old version</dt>
+      <dd>Close the app fully and open it again while online. If it persists, change <code>rateboard-v1</code> to <code>rateboard-v2</code> in <code>sw.js</code> and push.</dd>
+      <dt>Blank page when opening <code>index.html</code> by double-click</dt>
+      <dd>Browsers block modules and service workers from <code>file://</code>. Use the local server from step 7.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>6. Keep it safe</h2>
+    <div class="grid2">
+      <div class="box"><h3>Weekly backup</h3><ul><li><code>cd scripts &amp;&amp; python backup_firestore.py</code></li><li>Saves a dated CSV in <code>scripts/backups/</code>.</li></ul></div>
+      <div class="box"><h3>Secrets</h3><ul><li>Never share <code>serviceAccountKey.json</code> or <code>users.csv</code>.</li><li>The keys in <code>firebase-config.js</code> are safe to publish. The rules protect the data.</li></ul></div>
+    </div>
+  </section>
+
+  <div class="summary">
+    <h2>Summary</h2>
+    <p>Unzip the folder, create a Firebase project, paste its config and rules, then run the three Python steps: install, seed, create users. Push to GitHub, deploy on Netlify, authorize the domain, and add the app to each phone's home screen.</p>
+  </div>
+</main>
+
+<script>
+document.querySelectorAll(".copy").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var code = btn.parentElement.querySelector("pre");
+    var text = code ? code.innerText : "";
+    var done = function () { btn.textContent = "Copied"; setTimeout(function () { btn.textContent = "Copy"; }, 1500); };
+    try { navigator.clipboard.writeText(text).then(done, function () { selectText(code); }); }
+    catch (e) { selectText(code); }
+  });
+});
+function selectText(el) {
+  var r = document.createRange(); r.selectNodeContents(el);
+  var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+</script>
+
+</body></html>

@@ -1,0 +1,7 @@
+# Secrets: never commit these
+serviceAccountKey.json
+scripts/users.csv
+scripts/backups/
+__pycache__/
+.venv/
+node_modules/

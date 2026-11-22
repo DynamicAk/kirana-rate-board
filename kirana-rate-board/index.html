@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirana & Grocery Store Rate List</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#d97706">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Load Google Fonts: Inter & Noto Sans Devanagari for crisp Hindi + English rendering -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        [contenteditable="true"]:focus {
+            outline: 2px solid #d97706;
+            background-color: #fffbeb;
+            border-radius: 0.5rem;
+        }
+        /* Mobile-first responsive row layout: displays all details per item without horizontal scroll */
+        @media (max-width: 767px) {
+            #rate-table thead {
+                display: none;
+            }
+            #rate-table, #rate-table tbody {
+                display: block;
+                width: 100%;
+            }
+            #rate-table tr.item-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.45rem 0.65rem;
+                padding: 0.85rem;
+                border-bottom: 1px solid #e2e8f0;
+                background-color: #ffffff;
+                align-items: center;
+            }
+            #rate-table tr.item-row:nth-child(even) {
+                background-color: #fafafa;
+            }
+            #rate-table tr.item-row td {
+                display: block;
+                padding: 0 !important;
+                text-align: left !important;
+                width: auto !important;
+                min-width: 0 !important;
+            }
+            #rate-table tr.item-row td.col-actions {
+                grid-column: 1 / -1;
+                grid-row: 1;
+                text-align: right !important;
+            }
+            #rate-table tr.item-row td.col-item {
+                grid-column: 1 / -1;
+                grid-row: 2;
+            }
+            #rate-table tr.item-row td.col-price {
+                grid-column: 1 / 2;
+                grid-row: 3;
+            }
+            #rate-table tr.item-row td.col-amount {
+                grid-column: 2 / 3;
+                grid-row: 3;
+            }
+            #rate-table tr.item-row td.col-category {
+                grid-column: 1 / -1;
+                grid-row: 4;
+            }
+            #rate-table tr.item-row td.col-price::before {
+                content: "PRICE";
+                display: block;
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                color: #047857;
+                margin-bottom: 0.15rem;
+            }
+            #rate-table tr.item-row td.col-amount::before {
+                content: "AMOUNT / QTY";
+                display: block;
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                color: #b45309;
+                margin-bottom: 0.15rem;
+            }
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+            }
+            .shadow-xs, .shadow-sm, .shadow-md, .shadow-lg {
+                box-shadow: none !important;
+            }
+            table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            th, td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 10px !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none no-print">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm font-medium">
+            <span id="toast-icon" class="text-emerald-400 font-bold">✓</span>
+            <span id="toast-message">Changes saved automatically</span>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal for Delete -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden items-center justify-center p-4 no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg font-bold">✕</div>
+                <h3 class="text-lg font-bold text-slate-900">Delete this item?</h3>
+            </div>
+            <p id="delete-modal-text" class="text-slate-600 text-sm mb-6 leading-relaxed"></p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeDeleteModal()" class="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">Cancel</button>
+                <button onclick="confirmDelete()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 transition cursor-pointer">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Screen (shown until signed in) -->
+    <div id="login-screen" class="fixed inset-0 bg-slate-50 z-[60] flex items-center justify-center p-4 no-print">
+        <form id="login-form" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="bg-amber-100 p-2 rounded-xl text-xl">🏪</span>
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Rate Board Login</h2>
+                    <p class="text-xs text-slate-500">Shop staff only</p>
+                </div>
+            </div>
+            <label for="login-email" class="block text-xs font-semibold text-slate-600 mb-1">Email</label>
+            <input id="login-email" type="email" autocomplete="username" required class="w-full mb-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <label for="login-password" class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+            <input id="login-password" type="password" autocomplete="current-password" required class="w-full mb-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <p id="login-error" class="hidden text-xs text-rose-600 mb-3"></p>
+            <button type="submit" class="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer">Sign in</button>
+        </form>
+    </div>
+
+    <!-- Top Header -->
+    <header class="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <span class="bg-white/20 p-2 rounded-xl text-xl">🏪</span>
+                        <div>
+                            <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Kirana & Grocery Store Rate List</h1>
+                            <p id="header-subtitle" class="text-amber-100 text-xs sm:text-sm mt-0.5">
+                                Single-page rate board • Switch between View & Edit modes anytime
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mode Switcher & Primary Action Toolbar -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="inline-flex bg-amber-900/50 p-1 rounded-xl border border-amber-300/30 w-full sm:w-auto">
+                        <button id="mode-view-btn" onclick="setMode('view')" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-amber-900 shadow-xs transition cursor-pointer">
+                            <span>👁️</span> View Mode
+                        </button>
+                        <button id="mode-edit-btn" onclick="setMode('edit')" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-amber-100 hover:text-white transition cursor-pointer">
+                            <span>✏️</span> Edit Mode
+                        </button>
+                    </div>
+
+                    <div id="edit-toolbar-actions" class="hidden grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <button onclick="addNewRow()" class="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 bg-white text-amber-800 hover:bg-amber-50 font-semibold px-3.5 py-2 rounded-xl text-sm shadow-xs transition cursor-pointer">
+                            <span>+</span> Add Item
+                        </button>
+                        <button onclick="exportCSV()" class="inline-flex items-center justify-center gap-1.5 bg-amber-800/60 hover:bg-amber-800 text-white border border-amber-300/30 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
+                            <span>📊</span> Export CSV
+                        </button>
+                                                                    </div>
+
+                    <button id="logout-btn" onclick="logout()" class="inline-flex items-center justify-center gap-1.5 bg-amber-800/60 hover:bg-amber-800 text-white border border-amber-300/30 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
+                        <span>⎋</span> Sign out
+                    </button>
+                    <button onclick="window.print()" class="inline-flex items-center justify-center gap-1.5 bg-amber-800/60 hover:bg-amber-800 text-white border border-amber-300/30 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
+                        <span>🖨️</span> Print
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+
+        <!-- Search, Category Filter & Sort Order Controls -->
+        <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90 mb-5 flex flex-col gap-3 no-print">
+            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                <!-- Search Box -->
+                <div class="relative flex-grow">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔍</span>
+                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search English/Hindi (e.g. chilli, sugar, dal, oil, atta)..." class="w-full pl-9 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition">
+                    <button id="clear-search" onclick="clearSearch()" class="hidden absolute inset-y-0 right-2.5 flex items-center text-slate-400 hover:text-slate-600 text-sm cursor-pointer" title="Clear search">✕</button>
+                </div>
+
+                <!-- Dropdown Filters: Category & Sort Order -->
+                <div class="grid grid-cols-2 sm:flex items-center gap-2.5">
+                    <div class="relative">
+                        <select id="category-select" onchange="setCategoryFilter(this.value)" aria-label="Filter by category" class="w-full sm:w-52 pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition cursor-pointer">
+                        </select>
+                    </div>
+
+                    <div class="relative">
+                        <select id="sort-select" onchange="setSortOrder(this.value)" aria-label="Sort items" class="w-full sm:w-44 pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition cursor-pointer">
+                            <option value="original">↕️ Original Order</option>
+                            <option value="az">🔤 A → Z Order</option>
+                            <option value="za">🔠 Z → A Order</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span id="mode-badge" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-nowrap">
+                    👁️ Simple View
+                </span>
+                <div class="text-xs font-medium text-slate-600 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl text-center whitespace-nowrap">
+                    Showing <span id="visible-count" class="font-bold text-amber-900">0</span> / <span id="total-count" class="font-bold text-amber-900">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Print-Only Document Title -->
+        <div class="hidden print:block mb-4">
+            <h1 class="text-xl font-bold text-slate-900">Kirana & Grocery Store Rate List</h1>
+            <p class="text-xs text-slate-600">Complete Store Rate Board</p>
+        </div>
+
+        <!-- 3-Column Table Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
+            <div class="md:overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="rate-table">
+                    <thead>
+                        <tr class="bg-slate-100 border-b border-slate-200 text-slate-700 text-xs uppercase tracking-wider">
+                            <th class="py-3.5 px-4 font-bold min-w-[260px]">Item Name</th>
+                            <th class="py-3.5 px-4 font-bold min-w-[180px]">Price</th>
+                            <th class="py-3.5 px-4 font-bold min-w-[210px]">Amount of Item</th>
+                            <th id="th-category" class="hidden py-3.5 px-4 font-bold min-w-[170px] no-print">Category</th>
+                            <th id="th-actions" class="hidden py-3.5 px-4 font-bold w-24 text-center no-print">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty Search Result State -->
+            <div id="empty-state" class="hidden py-14 px-4 text-center">
+                <div class="text-4xl mb-3">📋</div>
+                <h3 class="text-base font-semibold text-slate-800">No items match your filter</h3>
+                <p class="text-slate-500 text-sm mt-1">Try another keyword or clear your filters to view all items.</p>
+                <button onclick="clearSearch(); setCategoryFilter('all');" class="mt-4 px-4 py-2.5 bg-amber-600 text-white rounded-xl text-sm font-semibold hover:bg-amber-700 transition cursor-pointer">
+                    Show All Items
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Status Bar -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
+            <p id="footer-hint">Simple View Mode active — switch to <strong>Edit Mode</strong> in the top bar to modify prices, categories, or items.</p>
+            <p id="save-status" class="text-slate-500 font-semibold">● Loading…</p>
+        </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

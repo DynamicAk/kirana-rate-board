@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The role comes from a custom claim set by scripts/manage_users.py
+    function role() {
+      return request.auth != null && 'role' in request.auth.token
+        ? request.auth.token.role : '';
+    }
+    function isMember() { return role() in ['viewer', 'editor']; }
+    function isEditor() { return role() == 'editor'; }
+
+    match /items/{itemId} {
+      allow read:  if isMember();   // viewers and editors
+      allow write: if isEditor();   // only editors
+    }
+
+    // Everything else is closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
