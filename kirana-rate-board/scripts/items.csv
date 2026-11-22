@@ -1,0 +1,126 @@
+﻿seq,category,itemName,price,amountOfItem
+1,Spices & Masala,आजीना मोटो (Ajinomoto),₹10,1 packet / piece
+2,Vrat / Fasting & Pooja,सिंघाड़ा आटा (Singhara Atta),₹40,1 packet / piece
+3,Vrat / Fasting & Pooja,कुट्टू आटा खुला (Kuttu Atta Khula),₹25,250g (1 paw)
+4,Vrat / Fasting & Pooja,कुट्टू आटा Pkt (Kuttu Atta Pkt),₹30,1 packet / piece
+5,Snacks & Ready-to-Eat,चिप्स (Chips),₹50,250g (1 paw)
+6,Vrat / Fasting & Pooja,व्रत वाला चावल (Vrat Wala Chawal),₹30,250g (1 paw)
+7,Vrat / Fasting & Pooja,पूजा घी छोटा (Pooja Ghee Chhota),₹55,1 piece / small pack
+8,Vrat / Fasting & Pooja,पूजा घी बड़ा (Pooja Ghee Bada),₹70,1 piece / large pack
+9,Vrat / Fasting & Pooja,सुपारी (Supari),₹5,1 piece
+10,Spices & Masala,जायफल (Jaiphal),₹5,1 piece
+11,Vrat / Fasting & Pooja,साबूदाना (Sabudana),₹25,250g (1 paw)
+12,Spices & Masala,लाल मिर्च साबुत (Lal Mirch Sabut),₹75,250g (1 paw)
+13,Spices & Masala,पीसा मिर्च (Pisa Mirch),₹18,50g
+14,Spices & Masala,धनिया (Dhaniya),₹10,50g
+15,Sugar & Sweeteners,बताशा (Batasha),₹20 / ₹75,250g (1 paw) / 1 kg
+16,Dal & Pulses,सफेद छोले (Safed Chhole),₹30 / ₹160,250g (1 paw) / 1 kg
+17,Dal & Pulses,अरहर दाल (Arhar Dal),₹175,1 kg
+18,Dal & Pulses,मलका लाल (Malka Lal),₹25 / ₹90,250g (1 paw) / 1 kg
+19,Dal & Pulses,चना दाल (Chana Dal),₹20 / ₹80,250g (1 paw) / 1 kg
+20,Dal & Pulses,मूंग धुली (Moong Dhuli),₹30,250g (1 paw)
+21,Dal & Pulses,मूंग हरी (Moong Hari),₹30,250g (1 paw)
+22,Dal & Pulses,उड़द धुली (Urad Dhuli),₹30,250g (1 paw)
+23,Oil & Ghee,रथ डालडा (Rath Dalda),₹90,1 packet (½ kg)
+24,Oil & Ghee,तील का तेल (Til Ka Tel),₹180 / ₹150,1 Litre
+25,Household & Misc,मुर्गी दाना (Murgi Dana),₹60 / ₹70,1 packet / piece
+26,Household & Misc,लाल सिक झाड़ू (Lal Seekh Jhadu),₹320 / ₹44 / ₹43,Bundle / 1 kg
+27,Household & Misc,दूसरा (Doosra),₹40,1 piece
+28,Rice & Grains,दलिया पैकेट (Daliya Packet),₹10,1 packet / piece
+29,Atta & Flours,सूजी पैकेट (Suji Packet),₹10,1 packet / piece
+30,Dry Fruits & Seeds,मूंगफली दाना (Moongfali Dana),₹40,250g (1 paw)
+31,Rice & Grains,Poha,₹40,1 packet / piece
+32,Dal & Pulses,काला चना (Kala Chana),₹23 / ₹85,250g (1 paw) / 1 kg
+33,Rice & Grains,Taj Mahal Rice,₹40,1 kg
+34,Vrat / Fasting & Pooja,साबुदाने Pkt (Sabudane Pkt),₹27,1 packet / piece
+35,Atta & Flours,बेसन (Besan),₹28 / ₹25,250g (1 paw)
+36,Dal & Pulses,अरहर दाल (Arhar Dal),₹100,1 kg
+37,Atta & Flours,अरारोट (Ararot),₹50,1 kg
+38,Atta & Flours,सूजी (Suji),₹35,½ kg (1 packet)
+39,Dal & Pulses,सोयाबीन (Soyabean),₹25,250g (1 paw)
+40,Dry Fruits & Seeds,गोला (Gola),₹125,250g (1 paw)
+41,Dry Fruits & Seeds,छुहारा (Chhuhara),₹300 / ₹75,1 kg / 250g (1 paw)
+42,Vrat / Fasting & Pooja,व्रत वाला चावल (Vrat Wala Chawal),₹35 / ₹10,250g (1 paw) / 70g
+43,Atta & Flours,सूजी खुल्ला (Suji Khulla),₹10 / ₹40,250g (1 paw) / 1 kg
+44,Dal & Pulses,राजमा (Rajma),₹40,250g (1 paw)
+45,Dry Fruits & Seeds,गोला (Gola),₹250,1 kg
+46,Rice & Grains,चूड़ा (Chuda),₹50,1 kg
+47,Rice & Grains,बाजरा (Bajra),₹36 / ₹9,1 kg / 250g
+48,Sugar & Sweeteners,भूरा (Bhura),₹55 / ₹15,1 kg / 250g (1 paw)
+49,Atta & Flours,सूजी (Suji),₹40 / ₹18,1 kg / 250g (1 paw)
+50,Dry Fruits & Seeds,काजू (Kaju),₹100,100g
+51,Dry Fruits & Seeds,बादाम (Badam),₹180 / ₹100,250g / 100g
+52,Dry Fruits & Seeds,किसमिस (Kismis),₹300,1 kg
+53,Atta & Flours,मैदा (Maida),₹36,1 kg
+54,Atta & Flours,बेसन (Besan),₹90 / ₹100 / ₹25,1 kg / 250g (1 paw)
+55,Oil & Ghee,घी (Ghee),₹160,½ Litre
+56,Oil & Ghee,घी (Ghee),₹140 / ₹195 / ₹190,1 Litre
+57,Oil & Ghee,घी (Ghee),₹300 / ₹380,2 Litre
+58,Oil & Ghee,खुला तेल (Khula Tel),₹130 / ₹140,1 kg
+59,Sugar & Sweeteners,चीनी (Chini),₹45 / ₹15 / ₹35 / ₹38,1 kg / 250g (1 paw)
+60,Atta & Flours,आटा खुला (Aata Khula),₹33 / ₹36 / ₹35,1 kg
+61,Atta & Flours,आटा हैडाप (Aata Hedap),₹360 / ₹350 / ₹380 / ₹390,1 bag / sack
+62,Atta & Flours,आटा फेन्सी (Aata Fancy),₹380,1 bag / sack
+63,Dal & Pulses,मलका (Malka),₹22 / ₹85,250g (1 paw) / 1 kg
+64,Dal & Pulses,उड़द (Urad),₹30,250g (1 paw)
+65,Dal & Pulses,मूंग (Moong),₹30,250g (1 paw)
+66,Dal & Pulses,अरहर (Arhar),₹35,250g (1 paw)
+67,Dal & Pulses,चना दाल (Chana Dal),₹22 / ₹85,250g (1 paw) / 1 kg
+68,Dal & Pulses,काला चना (Kala Chana),₹20 / ₹85,250g (1 paw) / 1 kg
+69,Oil & Ghee,फार्चून (Fortune),₹170 / ₹140 / ₹150,1 packet / Litre
+70,Oil & Ghee,20-20 गोल्ड (20-20 Gold),₹130 / ₹125 / ₹140 / ₹150,1 packet / Litre
+71,Snacks & Ready-to-Eat,Pasta,₹15,250g (1 paw)
+72,Snacks & Ready-to-Eat,Macaroni,₹15,250g (1 paw)
+73,Rice & Grains,Poha packet,₹40,1 packet / piece
+74,Atta & Flours,बेसन Pkt (Besan Pkt),₹60,1 packet / piece
+75,Dry Fruits & Seeds,सफेद तिल (Safed Til),₹70 / ₹60,250g (1 paw)
+76,Dal & Pulses,सफेद छोले (Safed Chhole),₹30,250g (1 paw)
+77,Vrat / Fasting & Pooja,व्रत chips (Vrat Chips),₹20 / ₹10,100g / 40g–50g
+78,Oil & Ghee,तील तेल (Til Tel),₹90,½ Litre
+79,Oil & Ghee,तील तेल (Til Tel),₹180,1 Litre
+80,Sugar & Sweeteners,गुड़ (Gud),₹20,250g (1 paw)
+81,Spices & Masala,जीरा Pkt (Jeera Pkt),₹35,1 packet / piece
+82,Dry Fruits & Seeds,गोला (Gola),₹500,1 kg
+83,Atta & Flours,आटा खुला (Aata Khula),₹36,1 kg
+84,Atta & Flours,मैदा (Maida),₹35,1 kg
+85,Rice & Grains,चूड़ा (Chuda),₹60 / ₹15,1 kg / 250g (1 paw)
+86,Oil & Ghee,रथ (Rath),₹90,½ kg
+87,Dal & Pulses,काला चना (Kala Chana),₹25,250g (1 paw)
+88,Household & Misc,फिनाइल (Phenyl),₹50,1 bottle / piece
+89,Spices & Masala,आमचूर Pkt (Amchoor Pkt),₹20,1 packet / piece
+90,Spices & Masala,आमचूर Pkt (Amchoor Pkt),₹20,1 packet / piece
+91,Atta & Flours,आटा खुला (Aata Khula),₹36,1 kg
+92,Snacks & Ready-to-Eat,पापड़ (Papad),₹70,1 packet / piece
+93,Sugar & Sweeteners,चीनी (Chini),₹64 / ₹60 / ₹54 / ₹55,1 kg
+94,Oil & Ghee,खुला तेल (Khula Tel),₹180 / ₹200 / ₹195,1 kg
+95,Oil & Ghee,घी (Ghee),₹105,½ kg
+96,Oil & Ghee,घी (Ghee),₹200 / ₹190 / ₹185,1 kg
+97,Oil & Ghee,घी (Ghee),₹400 / ₹380,2 kg
+98,Sugar & Sweeteners,चीनी (Chini),₹60 / ₹64 / ₹15,1 kg / 250g (1 paw)
+99,Dry Fruits & Seeds,गोला (Gola),₹500,1 kg
+100,Sugar & Sweeteners,धागे वाली मिश्री (Dhage Wali Mishri),₹100 / ₹25,1 kg / 250g (1 paw)
+101,Vrat / Fasting & Pooja,कुट्टू आटा (Kuttu Aata),₹25,250g (1 paw)
+102,Vrat / Fasting & Pooja,व्रत वाला चावल (Vrat Wala Chawal),₹50,250g (1 paw)
+103,Vrat / Fasting & Pooja,कुट्टू Pkt वाला (Kuttu Pkt Wala),₹35,1 packet / piece
+104,Vrat / Fasting & Pooja,सिंघाड़ा आटा (Singhara Aata),₹45,1 packet / piece
+105,Snacks & Ready-to-Eat,चिप्स (Chips),₹20 / ₹200,100g / 1 kg
+106,Atta & Flours,राजधानी बेसन Pkt (Rajdhani Besan Pkt),₹60,1 packet / piece
+107,Sugar & Sweeteners,बतासा (Batasa),₹100 / ₹25,1 kg / 250g (1 paw)
+108,Dry Fruits & Seeds,गोला (Gola),₹500,1 kg
+109,Oil & Ghee,तेल सफेद (Tel Safed),₹120 / ₹60,1 Litre / 250g (1 paw)
+110,Rice & Grains,मुरमुरे (Murmure),₹20 / ₹80,250g (1 paw) / 1 kg
+111,Snacks & Ready-to-Eat,आलू वाला chips (Aloo Wala Chips),₹40,250g (1 paw)
+112,Snacks & Ready-to-Eat,Chips,₹20,250g (1 paw)
+113,Spices & Masala,अजमाइन (Ajwain),₹150,1 kg
+114,Spices & Masala,हल्दी (Haldi),₹15 / ₹30 / ₹60,50g / 100g / 200g
+115,Spices & Masala,मिर्ची (Mirchi),₹20 / ₹40 / ₹80,50g / 100g / 200g
+116,Spices & Masala,धनिया (Dhaniya),₹15 / ₹30 / ₹60,50g / 100g / 200g
+117,Rice & Grains,Taj चावल (Taj Chawal),₹40,1 kg
+118,Spices & Masala,तेज पत्ता (Tej Patta),₹30,100g
+119,Snacks & Ready-to-Eat,पापड़ (Papad),₹70,1 packet / piece
+120,Snacks & Ready-to-Eat,खुला पापड़ (Khula Papad),₹20,250g (1 paw)
+121,Spices & Masala,खुला जीरा (Khula Jeera),₹600,1 kg
+122,Dry Fruits & Seeds,मूंगफली दाना (Moongfali Dana),₹40,250g (1 paw)
+123,Dry Fruits & Seeds,छुहारा (Chhuhara),₹350,1 kg
+124,Snacks & Ready-to-Eat,चीप्स (Chips),₹60 / ₹10 / ₹20,250g (1 paw) / 30g / 60g
+125,Rice & Grains,Taj Mahal,₹45,1 kg
