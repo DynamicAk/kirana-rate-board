@@ -1,5 +1,7 @@
 # Kirana Rate Board
 
+**Latest version:** v2.0 — compact multi-rate cards, typo-tolerant search, and automatic Hindi suggestions. See [FEATURES_VERSION.md](FEATURES_VERSION.md) for short Added / Changed / Removed / Tech notes after every release.
+
 Mobile-first rate list for one shop. Same screen as the original single HTML file, but the 125 items now live in Firebase Firestore, so every phone sees the same prices and the board works offline.
 
 ## Files
