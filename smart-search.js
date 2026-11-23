@@ -9,7 +9,7 @@ const HINDI = {
   "wheat":"गेहूं","gram":"चना","black":"काला","red":"लाल","white":"सफेद","green":"हरा","yellow":"पीला","powder":"पाउडर","whole":"साबुत","mustard":"सरसों","sarson":"सरसों",
   "tea":"चाय","chai":"चाय","coffee":"कॉफी","soap":"साबुन","sabun":"साबुन","biscuit":"बिस्कुट","biscuits":"बिस्कुट","packet":"पैकेट"
 };
-const normalize = v => String(v||"").toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu," ").trim();
+const normalize = v => String(v||"").toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{M}\p{N}]+/gu," ").trim();
 const roman = s => normalize(s).replace(/aa/g,"a").replace(/ee/g,"i").replace(/oo/g,"u");
 export function suggestHindi(text) {
   const words=normalize(text).split(" ").filter(Boolean);
