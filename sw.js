@@ -2,7 +2,7 @@
 // Prices themselves are cached by Firestore, not here.
 const CACHE = "rateboard-v1";
 const APP_FILES = [
-  "./", "./index.html", "./app.js", "./firebase-config.js", "./data/synonyms.js",
+  "./", "./index.html", "./app.js", "./firebase-config.js", "./data/synonyms.js", "./voice.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"
 ];
 // Third-party files the page needs (Tailwind, fonts, Firebase SDK). Cached after first load.
