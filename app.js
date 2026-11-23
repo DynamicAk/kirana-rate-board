@@ -193,6 +193,19 @@ function renderCategoryPills() {
     html += `<option value="${escapeHTML(cat)}"${selected}>${icon} ${escapeHTML(cat)} (${count})</option>`;
   });
   select.innerHTML = html;
+  const chips = document.getElementById("category-chips");
+  if (chips) {
+    const options = [["all", "All items"], ...CATEGORIES.map(cat => [cat, (CATEGORY_ICONS[cat] || "📦") + " " + cat])];
+    chips.replaceChildren(...options.map(([value, label]) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "category-chip";
+      btn.textContent = label;
+      btn.setAttribute("aria-pressed", String(activeCategoryFilter === value));
+      btn.onclick = () => window.setCategoryFilter(value);
+      return btn;
+    }));
+  }
 }
 
 window.setMode = function (mode) {
@@ -276,6 +289,7 @@ function renderTable() {
     const id = escapeHTML(entry.id);
     const catIcon = CATEGORY_ICONS[entry.category] || "📦";
     const editableAttr = isEdit ? `contenteditable="true"` : "";
+    const priceEditAttr = isEdit ? `role="button" tabindex="0" onclick="openPriceModal('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPriceModal('${id}')}"` : "";
     const cellEditClass = isEdit
       ? "border border-dashed border-amber-300/90 md:border-transparent bg-amber-50/40 md:bg-transparent hover:bg-amber-50/70 cursor-text"
       : "";
@@ -297,10 +311,8 @@ function renderTable() {
           </div>
         </td>
         <td class="col-price py-3 px-4 align-middle">
-          <div ${editableAttr}
-               onblur="updateCell('${id}', 'price', this.innerText)"
-               onkeydown="handleCellKeydown(event, this)"
-               class="font-bold text-emerald-700 text-sm px-2 py-1.5 rounded-lg ${cellEditClass}">
+          <div ${priceEditAttr}
+               class="font-bold text-emerald-700 text-sm px-2 py-1.5 rounded-lg ${isEdit ? 'bg-amber-50 cursor-pointer focus:outline-2 focus:outline-amber-600' : ''}">
             ${escapeHTML(entry.price)}
           </div>
         </td>
@@ -328,6 +340,35 @@ function renderTable() {
   }).join("");
 }
 
+// ---------- Touch-friendly price editor ----------
+let editingPriceId = null;
+window.openPriceModal = (id) => {
+  if (!isEditor || currentMode !== "edit") return;
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingPriceId = id;
+  document.getElementById("price-item-name").textContent = item.itemName;
+  document.getElementById("price-input").value = String(item.price ?? "").replace(/[^0-9.]/g, "");
+  const modal = document.getElementById("price-modal");
+  modal.classList.remove("hidden"); modal.classList.add("flex");
+  document.getElementById("price-input").focus();
+};
+window.closePriceModal = () => {
+  editingPriceId = null;
+  const modal = document.getElementById("price-modal");
+  modal.classList.add("hidden"); modal.classList.remove("flex");
+};
+document.getElementById("price-form").addEventListener("submit", e => {
+  e.preventDefault();
+  if (!editingPriceId || !isEditor) return;
+  const amount = Number(document.getElementById("price-input").value);
+  if (!Number.isFinite(amount) || amount < 0) return;
+  window.updateCell(editingPriceId, "price", "₹" + amount.toFixed(2).replace(/\\.00$/, ""));
+  window.closePriceModal();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") window.closePriceModal();
+});
 // ---------- Edits (all go to Firestore; rules allow editors only) ----------
 function stamp() {
   return { updatedAt: serverTimestamp(), updatedBy: currentUser ? currentUser.email : "" };
