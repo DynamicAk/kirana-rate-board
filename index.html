@@ -106,6 +106,19 @@
                 margin-bottom: 0.15rem;
             }
         }
+        /* Phase 1 mobile accessibility */
+        #search-panel { position: sticky; top: 0; z-index: 30; }
+        .category-chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
+        .category-chip { flex-shrink: 0; min-height: 44px; padding: 10px 14px; border-radius: 999px; border: 1px solid #cbd5e1; background: white; font-weight: 600; }
+        .category-chip[aria-pressed="true"] { background: #92400e; color: white; border-color: #92400e; }
+        #search-input { min-height: 48px; }
+        @media (max-width: 767px) {
+          #rate-table tr.item-row { margin: 8px; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px #0001; }
+          #rate-table tr.item-row td.col-price > div { font-size: 1.6rem; line-height: 1.3; }
+          #rate-table tr.item-row td.col-amount > div { font-size: 1rem; }
+          #rate-table tr.item-row td.col-actions button { min-width: 44px; min-height: 44px; }
+        }
+        @media print { #search-panel { position: static; } }
         @media print {
             .no-print {
                 display: none !important;
@@ -153,6 +166,18 @@
         </div>
     </div>
 
+    <div id="price-modal" class="fixed inset-0 bg-slate-900/50 z-50 hidden items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="price-modal-title">
+      <form id="price-form" class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl">
+        <h2 id="price-modal-title" class="text-lg font-bold mb-2">Update price</h2>
+        <p id="price-item-name" class="text-sm text-slate-600 mb-4"></p>
+        <label for="price-input" class="block text-sm font-semibold mb-2">New price (₹)</label>
+        <input id="price-input" type="number" min="0" step="0.01" inputmode="decimal" required class="w-full border border-slate-300 rounded-xl p-3 text-xl mb-4">
+        <div class="flex gap-3">
+          <button type="button" onclick="closePriceModal()" class="flex-1 rounded-xl bg-slate-100 p-3 font-semibold">Cancel</button>
+          <button type="submit" class="flex-1 rounded-xl bg-amber-700 text-white p-3 font-semibold">Save price</button>
+        </div>
+      </form>
+    </div>
     <!-- Login Screen (shown until signed in) -->
     <div id="login-screen" class="hidden fixed inset-0 bg-slate-50 z-[60] items-center justify-center p-4 no-print">
         <form id="login-form" class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200">
@@ -223,7 +248,7 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
 
         <!-- Search, Category Filter & Sort Order Controls -->
-        <div class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90 mb-5 flex flex-col gap-3 no-print">
+        <div id="search-panel" class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90 mb-5 flex flex-col gap-3 no-print">
             <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
                 <!-- Search Box -->
                 <div class="relative flex-grow">
@@ -251,6 +276,7 @@
                 </div>
             </div>
 
+            <nav id="category-chips" class="category-chips" aria-label="Quick category filters"></nav>
             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                 <span id="mode-badge" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-nowrap">
                     👁️ Simple View
