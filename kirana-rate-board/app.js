@@ -88,37 +88,55 @@ function writeFailed(err) {
 }
 
 // ---------- Auth ----------
-onAuthStateChanged(auth, async (user) => {
-  const loginScreen = document.getElementById("login-screen");
-  if (!user) {
-    currentUser = null; isEditor = false;
-    if (unsubscribeItems) { unsubscribeItems(); unsubscribeItems = null; }
-    items = [];
-    loginScreen.classList.remove("hidden");
-    return;
-  }
-  currentUser = user;
-  let role = "";
-  try {
-    const token = await user.getIdTokenResult(true); // refresh so new roles apply
-    role = token.claims.role || "";
-  } catch (err) {
-    // Offline: fall back to the cached token
-    try { role = (await user.getIdTokenResult()).claims.role || ""; } catch (e) {}
-  }
-  isEditor = role === "editor";
-  loginScreen.classList.add("hidden");
+const loginScreen = document.getElementById("login-screen");
+function showLogin() { loginScreen.classList.remove("hidden"); loginScreen.classList.add("flex"); }
+function hideLogin() { loginScreen.classList.add("hidden"); loginScreen.classList.remove("flex"); }
 
-  if (role !== "editor" && role !== "viewer") {
+// Reads the user's role. Returns null if it could not be checked (offline or slow).
+async function readRole(user, forceRefresh) {
+  try {
+    const result = await Promise.race([
+      user.getIdTokenResult(forceRefresh),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000))
+    ]);
+    return result.claims.role || "";
+  } catch (err) {
+    return null;
+  }
+}
+
+function enterApp(role) {
+  if (role === "") {                      // signed in, but no role given yet
+    isEditor = false;
     setStatus("● No access. Ask the owner to give your account a role.", "text-rose-600");
     showToast("Your account has no role yet", "!");
     return;
   }
-
+  isEditor = role === "editor";           // null (could not check) behaves like viewer
   let savedMode = "view";
   try { savedMode = localStorage.getItem(MODE_KEY) || "view"; } catch (e) {}
   setMode(isEditor ? savedMode : "view");
-  startListening();
+  if (!unsubscribeItems) startListening();
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    currentUser = null; isEditor = false;
+    if (unsubscribeItems) { unsubscribeItems(); unsubscribeItems = null; }
+    items = [];
+    showLogin();                          // only shown when really signed out
+    return;
+  }
+  currentUser = user;
+  hideLogin();                            // saved login: go straight to the list
+
+  // 1) Use the saved token first. No network wait, so the list opens at once.
+  const cachedRole = await readRole(user, false);
+  enterApp(cachedRole);
+
+  // 2) Quietly refresh in the background so role changes apply.
+  const freshRole = await readRole(user, true);
+  if (freshRole !== null && freshRole !== cachedRole) enterApp(freshRole);
 });
 
 document.getElementById("login-form").addEventListener("submit", async (e) => {
