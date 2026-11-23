@@ -118,6 +118,41 @@
           #rate-table tr.item-row td.col-amount > div { font-size: 1rem; }
           #rate-table tr.item-row td.col-actions button { min-width: 44px; min-height: 44px; }
         }
+        /* Compact rate cards: first saved rate is always visible. */
+        #rate-table thead { display: none; }
+        #rate-table, #rate-table tbody { display: block; width: 100%; }
+        #rate-table tr.item-row { display: block; margin: 5px 8px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; overflow: hidden; }
+        #rate-table tr.item-row td.col-item { display: block; padding: 0 !important; width: 100%; }
+        .compact-main { display: flex; align-items: center; }
+        .compact-summary { width: 100%; min-height: 58px; display: flex; align-items: center; text-align: left; gap: 8px; padding: 9px 12px; }
+        .compact-summary:disabled { cursor: default; }
+        .compact-summary:not(:disabled) { cursor: pointer; }
+        .compact-summary:focus-visible { outline: 2px solid #d97706; outline-offset: -2px; }
+        .compact-names { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+        .compact-names strong { font-size: 14px; color: #0f172a; overflow-wrap: anywhere; }
+        .compact-names small { font-size: 11px; color: #64748b; }
+        .compact-primary { flex-shrink: 0; display: flex; flex-direction: column; text-align: right; }
+        .compact-primary strong { font-size: 19px; color: #047857; line-height: 1.25; }
+        .compact-primary small { font-size: 11px; color: #64748b; }
+        .compact-chevron { color: #64748b; font-size: 20px; width: 15px; text-align: center; }
+        .compact-edit { flex-shrink: 0; margin-right: 8px; min-width: 42px; min-height: 44px; border-radius: 8px; background: #fef3c7; color: #92400e; font-size: 20px; }
+        .compact-rates { display: flex; gap: 5px; padding: 8px; border-top: 1px solid #e2e8f0; flex-wrap: wrap; }
+        .rate-option { display: flex; flex: 1 1 85px; min-width: 72px; flex-direction: column; text-align: center; gap: 2px; padding: 6px; background: #f8fafc; border-radius: 8px; font-size: 12px; }
+        .rate-option strong { color: #047857; font-size: 16px; }
+        .compact-actions { display: flex; gap: 6px; padding: 6px 10px; border-top: 1px solid #e2e8f0; }
+        .compact-actions select { flex: 1; min-width: 0; }
+        .compact-actions button, .compact-actions select { min-height: 40px; padding: 6px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; }
+        .rate-edit-row { display: flex; align-items: center; gap: 7px; margin: 8px 0; }
+        .rate-edit-row input { min-width: 0; flex: 1; width: 40%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 9px; }
+        .rate-edit-row button { min-width: 40px; min-height: 40px; color: #be123c; }
+        .print-rates { display: none; }
+        @media print {
+          #rate-table tr.item-row { break-inside: avoid; }
+          .compact-rates { display: none; }
+          .print-rates { display: flex; flex-wrap: wrap; gap: 6px; }
+          .compact-summary { min-height: 0; }
+          .compact-chevron { display: none; }
+        }
         @media print { #search-panel { position: static; } }
         @media print {
             .no-print {
@@ -166,15 +201,19 @@
         </div>
     </div>
 
-    <div id="price-modal" class="fixed inset-0 bg-slate-900/50 z-50 hidden items-center justify-center p-4 no-print" role="dialog" aria-modal="true" aria-labelledby="price-modal-title">
-      <form id="price-form" class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-xl">
-        <h2 id="price-modal-title" class="text-lg font-bold mb-2">Update price</h2>
-        <p id="price-item-name" class="text-sm text-slate-600 mb-4"></p>
-        <label for="price-input" class="block text-sm font-semibold mb-2">New price (₹)</label>
-        <input id="price-input" type="number" min="0" step="0.01" inputmode="decimal" required class="w-full border border-slate-300 rounded-xl p-3 text-xl mb-4">
+    <div id="price-modal" class="fixed inset-0 bg-slate-900/50 z-50 hidden items-center justify-center p-3 no-print" role="dialog" aria-modal="true" aria-labelledby="price-modal-title">
+      <form id="price-form" class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 shadow-xl">
+        <h2 id="price-modal-title" class="text-lg font-bold mb-3">Edit product & rates</h2>
+        <label for="product-english" class="block text-sm font-semibold mb-1">English / Hinglish name</label>
+        <input id="product-english" required oninput="autoHindiName()" class="w-full border border-slate-300 rounded-xl p-3 mb-3" placeholder="Dal">
+        <label for="product-hindi" class="block text-sm font-semibold mb-1">Hindi name (automatic suggestion; editable)</label>
+        <input id="product-hindi" oninput="markHindiEdited()" class="w-full border border-slate-300 rounded-xl p-3 mb-3" placeholder="दाल">
+        <div class="text-sm font-semibold mb-1">Quantity and whole-number price (₹)</div>
+        <div id="rate-fields"></div>
+        <button type="button" onclick="addRateField()" class="w-full border border-amber-500 rounded-xl p-2.5 text-amber-800 font-semibold mb-4">+ Add another rate</button>
         <div class="flex gap-3">
           <button type="button" onclick="closePriceModal()" class="flex-1 rounded-xl bg-slate-100 p-3 font-semibold">Cancel</button>
-          <button type="submit" class="flex-1 rounded-xl bg-amber-700 text-white p-3 font-semibold">Save price</button>
+          <button type="submit" class="flex-1 rounded-xl bg-amber-700 text-white p-3 font-semibold">Save changes</button>
         </div>
       </form>
     </div>
@@ -299,9 +338,9 @@
                 <table class="w-full text-left border-collapse" id="rate-table">
                     <thead>
                         <tr class="bg-slate-100 border-b border-slate-200 text-slate-700 text-xs uppercase tracking-wider">
-                            <th class="py-3.5 px-4 font-bold min-w-[260px]">Item Name</th>
-                            <th class="py-3.5 px-4 font-bold min-w-[180px]">Price</th>
-                            <th class="py-3.5 px-4 font-bold min-w-[210px]">Amount of Item</th>
+                            <th class="py-3.5 px-4 font-bold min-w-[260px]">Item Name and Rates</th>
+                            
+                            
                             <th id="th-category" class="hidden py-3.5 px-4 font-bold min-w-[170px] no-print">Category</th>
                             <th id="th-actions" class="hidden py-3.5 px-4 font-bold w-24 text-center no-print">Actions</th>
                         </tr>
