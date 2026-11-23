@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
-import { SEARCH_SYNONYMS } from "./data/synonyms.js";
+import { matchesItem, suggestHindi } from "./smart-search.js";
 import { extractKeywords } from "./voice.js";
 
 const MODE_KEY = "kirana_store_ui_mode_v5";
@@ -181,6 +181,19 @@ function startListening() {
   });
 }
 
+// Old Firestore documents remain readable without a destructive migration.
+function ratesOf(item) {
+  if (Array.isArray(item.variants) && item.variants.length) {
+    return item.variants.map(v => ({ quantity: String(v.quantity || ""), price: Number(v.price) })).filter(v => Number.isSafeInteger(v.price) && v.price >= 0);
+  }
+  const n = Number(String(item.price ?? "0").replace(/[^0-9.]/g, ""));
+  return [{ quantity: String(item.amountOfItem || "1 piece"), price: Number.isFinite(n) ? Math.round(n) : 0 }];
+}
+function namesOf(item) {
+  const match = String(item.itemName || "").match(/^(.+?)\\s*\\((.+)\\)\\s*$/);
+  return { en: item.nameEn || (match ? match[2] : item.itemName || ""), hi: item.nameHi || (match ? match[1] : "") };
+}
+const expandedItems = new Set();
 // ---------- Rendering ----------
 function renderCategoryPills() {
   const select = document.getElementById("category-select");
@@ -254,20 +267,10 @@ function renderTable() {
   const isEdit = currentMode === "edit";
   const q = searchQuery.trim().toLowerCase();
 
-  let searchTerms = [];
-  if (q) {
-    searchTerms.push(q);
-    Object.keys(SEARCH_SYNONYMS).forEach(key => {
-      if (key.includes(q) || q.includes(key)) searchTerms.push(...SEARCH_SYNONYMS[key]);
-    });
-  }
-
-  const filtered = items.filter(entry => {
-    if (activeCategoryFilter !== "all" && entry.category !== activeCategoryFilter) return false;
-    if (!q) return true;
-    const blob = `${entry.itemName} ${entry.price} ${entry.amountOfItem} ${entry.category}`.toLowerCase();
-    return searchTerms.some(term => blob.includes(term));
-  });
+  const filtered = items.filter(entry =>
+    (activeCategoryFilter === "all" || entry.category === activeCategoryFilter) &&
+    matchesItem(entry, q, ratesOf(entry))
+  );
 
   if (activeSortOrder === "az") {
     filtered.sort((a, b) => getSortableName(a.itemName).localeCompare(getSortableName(b.itemName)));
@@ -287,88 +290,96 @@ function renderTable() {
 
   tbody.innerHTML = filtered.map(entry => {
     const id = escapeHTML(entry.id);
-    const catIcon = CATEGORY_ICONS[entry.category] || "📦";
-    const editableAttr = isEdit ? `contenteditable="true"` : "";
-    const priceEditAttr = isEdit ? `role="button" tabindex="0" onclick="openPriceModal('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPriceModal('${id}')}"` : "";
-    const cellEditClass = isEdit
-      ? "border border-dashed border-amber-300/90 md:border-transparent bg-amber-50/40 md:bg-transparent hover:bg-amber-50/70 cursor-text"
-      : "";
-    const categoryOptionsHTML = CATEGORIES.map(cat =>
+    const rates = ratesOf(entry);
+    const first = rates[0] || { quantity: "—", price: 0 };
+    const names = namesOf(entry);
+    const many = rates.length > 1;
+    const open = many && expandedItems.has(entry.id);
+    const categoryOptions = CATEGORIES.map(cat =>
       `<option value="${escapeHTML(cat)}"${entry.category === cat ? " selected" : ""}>${CATEGORY_ICONS[cat] || "📦"} ${escapeHTML(cat)}</option>`
     ).join("");
-
+    const allRates = rates.map(r => `<div class="rate-option"><span>${escapeHTML(r.quantity)}</span><strong>₹${r.price}</strong></div>`).join("");
     return `
-      <tr class="item-row hover:bg-amber-50/30 transition-colors" data-id="${id}">
-        <td class="col-item py-3 px-4 align-middle">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div ${editableAttr}
-                 onblur="updateCell('${id}', 'itemName', this.innerText)"
-                 onkeydown="handleCellKeydown(event, this)"
-                 class="font-semibold text-slate-900 text-base md:text-sm px-2 py-1.5 rounded-lg ${cellEditClass} flex-grow">
-              ${escapeHTML(entry.itemName)}
+      <tr class="item-row" data-id="${id}">
+        <td class="col-item" colspan="${isEdit ? 5 : 3}">
+          <div class="compact-item">
+            <div class="compact-main">
+              <button type="button" class="compact-summary" ${many ? `onclick="toggleRates('${id}')" aria-expanded="${open}"` : 'disabled'} aria-label="${escapeHTML(names.hi || names.en)} ${many ? 'show or hide rates' : 'single rate'}">
+                <span class="compact-names"><strong>${escapeHTML(names.hi || names.en)}</strong>${names.hi && names.en ? `<small>${escapeHTML(names.en)}</small>` : ""}</span>
+                <span class="compact-primary"><strong>₹${first.price}</strong><small>${escapeHTML(first.quantity)}</small></span>
+                ${many ? `<span class="compact-chevron" aria-hidden="true">${open ? "⌃" : "⌄"}</span>` : ""}
+              </button>
+              ${isEdit ? `<button type="button" class="compact-edit no-print" onclick="openPriceModal('${id}')" aria-label="Edit ${escapeHTML(names.en || names.hi)}">✎</button>` : ""}
             </div>
-            ${!isEdit ? `<span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200/80 whitespace-nowrap">${catIcon} ${escapeHTML(entry.category)}</span>` : ""}
+            ${open ? `<div class="compact-rates">${allRates}</div>` : ""}
+            ${isEdit ? `<div class="compact-actions no-print">
+              <select aria-label="Category" onchange="updateCategory('${id}',this.value)">${categoryOptions}</select>
+              <button onclick="insertRowAfter('${id}')">+ Below</button>
+              <button onclick="deleteRow('${id}')">Delete</button>
+            </div>` : ""}
+            <div class="print-rates">${allRates}</div>
           </div>
         </td>
-        <td class="col-price py-3 px-4 align-middle">
-          <div ${priceEditAttr}
-               class="font-bold text-emerald-700 text-sm px-2 py-1.5 rounded-lg ${isEdit ? 'bg-amber-50 cursor-pointer focus:outline-2 focus:outline-amber-600' : ''}">
-            ${escapeHTML(entry.price)}
-          </div>
-        </td>
-        <td class="col-amount py-3 px-4 align-middle">
-          <div ${editableAttr}
-               onblur="updateCell('${id}', 'amountOfItem', this.innerText)"
-               onkeydown="handleCellKeydown(event, this)"
-               class="font-medium text-slate-700 text-sm px-2 py-1.5 rounded-lg ${cellEditClass}">
-            ${escapeHTML(entry.amountOfItem)}
-          </div>
-        </td>
-        ${isEdit ? `
-        <td class="col-category py-3 px-4 align-middle no-print">
-          <select onchange="updateCategory('${id}', this.value)" class="w-full px-2.5 py-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer">
-            ${categoryOptionsHTML}
-          </select>
-        </td>
-        <td class="col-actions py-3 px-4 align-middle text-center no-print">
-          <div class="inline-flex items-center gap-1.5">
-            <button onclick="insertRowAfter('${id}')" title="Insert item below" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 font-bold text-sm transition cursor-pointer">+</button>
-            <button onclick="deleteRow('${id}')" title="Delete item" class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 font-bold text-sm transition cursor-pointer">✕</button>
-          </div>
-        </td>` : ""}
       </tr>`;
   }).join("");
 }
 
-// ---------- Touch-friendly price editor ----------
+// ---------- Compact cards and multi-rate editor ----------
+window.toggleRates = id => { if(expandedItems.has(id)) expandedItems.delete(id); else expandedItems.add(id); renderTable(); };
 let editingPriceId = null;
-window.openPriceModal = (id) => {
-  if (!isEditor || currentMode !== "edit") return;
-  const item = items.find(i => i.id === id);
-  if (!item) return;
-  editingPriceId = id;
-  document.getElementById("price-item-name").textContent = item.itemName;
-  document.getElementById("price-input").value = String(item.price ?? "").replace(/[^0-9.]/g, "");
-  const modal = document.getElementById("price-modal");
-  modal.classList.remove("hidden"); modal.classList.add("flex");
-  document.getElementById("price-input").focus();
+let draftRates = [];
+let hindiTouched = false;
+function addRateField(quantity="", price="") {
+  const wrap=document.createElement("div");
+  wrap.className="rate-edit-row";
+  const qty=document.createElement("input");
+  qty.placeholder="e.g. 250 g"; qty.required=true; qty.value=quantity; qty.setAttribute("aria-label","Quantity");
+  const amount=document.createElement("input");
+  amount.type="number";amount.min="0";amount.step="1";amount.inputMode="numeric";amount.required=true;amount.value=price;amount.setAttribute("aria-label","Price in rupees");
+  const remove=document.createElement("button");
+  remove.type="button";remove.textContent="✕";remove.setAttribute("aria-label","Remove rate");
+  remove.onclick=()=>{if(document.querySelectorAll(".rate-edit-row").length>1)wrap.remove();else showToast("Keep at least one rate","!");};
+  wrap.append(qty,amount,remove);document.getElementById("rate-fields").append(wrap);
+}
+window.addRateField = () => addRateField();
+window.openPriceModal = id => {
+  if(!isEditor||currentMode!=="edit")return;
+  const item=items.find(i=>i.id===id);if(!item)return;
+  editingPriceId=id;hindiTouched=false;
+  const names=namesOf(item);
+  document.getElementById("product-english").value=names.en;
+  document.getElementById("product-hindi").value=names.hi || suggestHindi(names.en);
+  document.getElementById("rate-fields").replaceChildren();
+  ratesOf(item).forEach(r=>addRateField(r.quantity,String(r.price)));
+  const modal=document.getElementById("price-modal");modal.classList.remove("hidden");modal.classList.add("flex");
+  document.getElementById("product-english").focus();
 };
+window.autoHindiName = () => {
+  if(!hindiTouched)document.getElementById("product-hindi").value=suggestHindi(document.getElementById("product-english").value);
+};
+window.markHindiEdited = () => { hindiTouched=true; };
 window.closePriceModal = () => {
-  editingPriceId = null;
-  const modal = document.getElementById("price-modal");
-  modal.classList.add("hidden"); modal.classList.remove("flex");
+  editingPriceId=null;
+  const modal=document.getElementById("price-modal");modal.classList.add("hidden");modal.classList.remove("flex");
 };
 document.getElementById("price-form").addEventListener("submit", e => {
-  e.preventDefault();
-  if (!editingPriceId || !isEditor) return;
-  const amount = Number(document.getElementById("price-input").value);
-  if (!Number.isFinite(amount) || amount < 0) return;
-  window.updateCell(editingPriceId, "price", "₹" + amount.toFixed(2).replace(/\\.00$/, ""));
+  e.preventDefault();if(!editingPriceId||!isEditor)return;
+  const en=document.getElementById("product-english").value.trim();
+  const hi=document.getElementById("product-hindi").value.trim();
+  const variants=[...document.querySelectorAll(".rate-edit-row")].map(row=>({
+    quantity:row.children[0].value.trim(),price:Number(row.children[1].value)
+  }));
+  if(!en||!variants.length||variants.some(r=>!r.quantity||!Number.isSafeInteger(r.price)||r.price<0)){
+    showToast("Enter quantities and whole-number prices","!");return;
+  }
+  const first=variants[0];
+  updateDoc(doc(db,"items",editingPriceId),{
+    nameEn:en,nameHi:hi,itemName:hi ? hi+" ("+en+")" : en,
+    variants,price:"₹"+first.price,amountOfItem:first.quantity,...stamp()
+  }).then(()=>showToast("Rates saved")).catch(writeFailed);
   window.closePriceModal();
 });
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") window.closePriceModal();
-});
+document.addEventListener("keydown", e => { if(e.key==="Escape")window.closePriceModal(); });
 // ---------- Edits (all go to Firestore; rules allow editors only) ----------
 function stamp() {
   return { updatedAt: serverTimestamp(), updatedBy: currentUser ? currentUser.email : "" };
@@ -398,8 +409,10 @@ function newItemData(category, seq) {
   return {
     seq, category,
     itemName: "नया आइटम (New Item)",
+    nameEn: "New Item", nameHi: "नया आइटम",
     price: "₹0",
     amountOfItem: "1 packet / piece",
+    variants: [{ quantity: "1 packet / piece", price: 0 }],
     ...stamp()
   };
 }
@@ -467,18 +480,17 @@ window.setSortOrder = (order) => {
 
 // ---------- Export ----------
 window.exportCSV = () => {
-  const csvRows = [["Item Name", "Price", "Amount of Item", "Category"].join(",")];
-  items.forEach(item => {
-    csvRows.push([item.itemName, item.price, item.amountOfItem, item.category]
-      .map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","));
+  const csvRows=[["Item Name","English Name","Hindi Name","Price","Quantity","Category"].join(",")];
+  const quote=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  items.forEach(item=>{
+    const names=namesOf(item);
+    ratesOf(item).forEach(r=>csvRows.push([item.itemName,names.en,names.hi,r.price,r.quantity,item.category].map(quote).join(",")));
   });
-  const blob = new Blob(["﻿" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url; link.download = "kirana_store_rate_list.csv";
-  document.body.appendChild(link); link.click(); document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  showToast("CSV exported with Hindi & English text", "📊");
+  const blob=new Blob(["\\uFEFF"+csvRows.join("\\n")],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download="kirana_store_rate_list.csv";
+  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
+  showToast("CSV exported with all rates","📊");
 };
 
 // ---------- Voice typing (browser's built-in speech recognition, no library) ----------
