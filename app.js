@@ -10,7 +10,7 @@ import {
 
 import { firebaseConfig } from "./firebase-config.js";
 import { SEARCH_SYNONYMS } from "./data/synonyms.js";
-import { extractKeywords, buildAnswer } from "./voice.js";
+import { extractKeywords } from "./voice.js";
 
 const MODE_KEY = "kirana_store_ui_mode_v5";
 
@@ -440,33 +440,11 @@ window.exportCSV = () => {
   showToast("CSV exported with Hindi & English text", "📊");
 };
 
-// ---------- Voice search (uses the browser's built-in speech, no library) ----------
+// ---------- Voice typing (browser's built-in speech recognition, no library) ----------
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 let voiceLang = "hi-IN";          // "hi-IN" understands Hindi and Hinglish; "en-IN" for English
 let recognizer = null;
 let listening = false;
-
-function matchesFor(text) {
-  const q = text.trim().toLowerCase();
-  if (!q) return [];
-  const terms = [q];
-  Object.keys(SEARCH_SYNONYMS).forEach(key => {
-    if (key.includes(q) || q.includes(key)) terms.push(...SEARCH_SYNONYMS[key]);
-  });
-  return items.filter(e => {
-    const blob = `${e.itemName} ${e.price} ${e.amountOfItem} ${e.category}`.toLowerCase();
-    return terms.some(t => blob.includes(t));
-  });
-}
-
-function speak(text) {
-  if (!("speechSynthesis" in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = voiceLang;
-  u.rate = 0.95;
-  speechSynthesis.speak(u);
-}
 
 window.toggleVoiceLang = () => {
   voiceLang = voiceLang === "hi-IN" ? "en-IN" : "hi-IN";
@@ -478,7 +456,6 @@ window.startVoice = () => {
   if (!SpeechRec) { showToast("Voice search is not supported in this browser", "!"); return; }
   if (listening && recognizer) { recognizer.stop(); return; }
 
-  speechSynthesis && speechSynthesis.cancel();
   const mic = document.getElementById("mic-btn");
   recognizer = new SpeechRec();
   recognizer.lang = voiceLang;
@@ -491,7 +468,6 @@ window.startVoice = () => {
     const keywords = extractKeywords(heard);          // "chilli ka rate kya hai" -> "chilli"
     document.getElementById("search-input").value = keywords;
     window.handleSearch(keywords);
-    speak(buildAnswer(matchesFor(keywords), keywords, voiceLang === "hi-IN"));
   };
   recognizer.onerror = (e) => {
     const msg = e.error === "not-allowed" ? "Allow microphone access for this app"
