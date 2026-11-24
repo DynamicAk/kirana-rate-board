@@ -1,5 +1,10 @@
 # Kirana Rate Board — Feature Versions
 
+## v2.0.1 — Documentation (2026-11-24)
+- **Changed:** First-person README with problem statement, features, stack, structure and setup.
+- **Removed:** No application features.
+- **Tech:** Markdown.
+
 ## v2.0 — Compact rates & smart names (2026-11-23)
 - **Added:** Multiple quantity/whole-rupee rates per item; compact expandable mobile cards; first rate shown by default; editable English/Hindi names; offline typo-tolerant search; CSV and print include all rates.
 - **Changed:** Existing single-rate Firestore items are read automatically; edited items store `variants` and retain legacy first-rate fields.
