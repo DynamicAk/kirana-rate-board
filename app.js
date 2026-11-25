@@ -37,7 +37,6 @@ const itemsCol = collection(db, "items");
 // ---------- State ----------
 let items = [];                 // always sorted by seq (notebook order)
 let activeCategoryFilter = "all";
-let activeSortOrder = "original";
 let searchQuery = "";
 let currentMode = "view";
 let currentUser = null;
@@ -75,11 +74,6 @@ function setStatus(text, cls) {
   if (!el) return;
   el.textContent = text;
   el.className = cls + " font-semibold";
-}
-
-function getSortableName(name) {
-  const match = String(name || "").match(/\(([^)]+)\)/);
-  return (match ? match[1] : String(name || "")).trim().toLowerCase();
 }
 
 function writeFailed(err) {
@@ -125,6 +119,9 @@ onAuthStateChanged(auth, async (user) => {
     currentUser = null; isEditor = false;
     if (unsubscribeItems) { unsubscribeItems(); unsubscribeItems = null; }
     items = [];
+    window.setMode("view");
+    renderCategoryPills();
+    window.closeShopMenu();
     showLogin();                          // only shown when really signed out
     return;
   }
@@ -196,16 +193,6 @@ function namesOf(item) {
 const expandedItems = new Set();
 // ---------- Rendering ----------
 function renderCategoryPills() {
-  const select = document.getElementById("category-select");
-  if (!select) return;
-  let html = `<option value="all"${activeCategoryFilter === "all" ? " selected" : ""}>All Categories (${items.length})</option>`;
-  CATEGORIES.forEach(cat => {
-    const count = items.filter(i => i.category === cat).length;
-    const icon = CATEGORY_ICONS[cat] || "📦";
-    const selected = activeCategoryFilter === cat ? " selected" : "";
-    html += `<option value="${escapeHTML(cat)}"${selected}>${icon} ${escapeHTML(cat)} (${count})</option>`;
-  });
-  select.innerHTML = html;
   const chips = document.getElementById("category-chips");
   if (chips) {
     const options = [["all", "All items"], ...CATEGORIES.map(cat => [cat, (CATEGORY_ICONS[cat] || "📦") + " " + cat])];
@@ -226,38 +213,28 @@ window.setMode = function (mode) {
   try { localStorage.setItem(MODE_KEY, currentMode); } catch (err) {}
 
   const isEdit = currentMode === "edit";
-  const viewBtn = document.getElementById("mode-view-btn");
   const editBtn = document.getElementById("mode-edit-btn");
   const editActions = document.getElementById("edit-toolbar-actions");
   const thCategory = document.getElementById("th-category");
   const thActions = document.getElementById("th-actions");
-  const modeBadge = document.getElementById("mode-badge");
-  const footerHint = document.getElementById("footer-hint");
-
-  editBtn.classList.toggle("hidden", !isEditor); // viewers never see the Edit button
-
-  const activeCls = "flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-amber-900 shadow-xs transition cursor-pointer";
-  const idleCls = "flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-amber-100 hover:text-white transition cursor-pointer";
-
-  if (isEdit) {
-    viewBtn.className = idleCls; editBtn.className = activeCls + (isEditor ? "" : " hidden");
-    editActions.classList.remove("hidden");
-    thCategory.classList.remove("hidden"); thActions.classList.remove("hidden");
-    modeBadge.className = "text-xs font-semibold px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 border border-amber-300 whitespace-nowrap";
-    modeBadge.textContent = "✏️ Edit Mode Active";
-    footerHint.innerHTML = "Edit Mode active — tap any cell to edit text directly. Changes save automatically.";
-  } else {
-    viewBtn.className = activeCls; editBtn.className = idleCls + (isEditor ? "" : " hidden");
-    editActions.classList.add("hidden");
-    thCategory.classList.add("hidden"); thActions.classList.add("hidden");
-    modeBadge.className = "text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-nowrap";
-    modeBadge.textContent = "👁️ Simple View";
-    footerHint.innerHTML = isEditor
-      ? "Simple View Mode active — switch to <strong>Edit Mode</strong> in the top bar to modify prices, categories, or items."
-      : "Simple View Mode active.";
-  }
+  editBtn.classList.toggle("hidden", !isEditor);
+  editBtn.textContent = isEdit ? "✓ Finish editing" : "✏️ Edit Mode";
+  editActions.classList.toggle("hidden", !isEdit);
+  thCategory.classList.toggle("hidden", !isEdit);
+  thActions.classList.toggle("hidden", !isEdit);
   renderTable();
 };
+
+window.toggleEditMode = () => { if (isEditor) window.setMode(currentMode === "edit" ? "view" : "edit"); };
+const shopMenu = document.getElementById("shop-menu");
+window.closeShopMenu = () => { shopMenu.open = false; };
+document.addEventListener("click", e => { if (!shopMenu.contains(e.target)) window.closeShopMenu(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && shopMenu.open) {
+    window.closeShopMenu();
+    shopMenu.querySelector("summary").focus();
+  }
+});
 
 function renderTable() {
   const tbody = document.getElementById("table-body");
@@ -271,12 +248,6 @@ function renderTable() {
     (activeCategoryFilter === "all" || entry.category === activeCategoryFilter) &&
     matchesItem(entry, q, ratesOf(entry))
   );
-
-  if (activeSortOrder === "az") {
-    filtered.sort((a, b) => getSortableName(a.itemName).localeCompare(getSortableName(b.itemName)));
-  } else if (activeSortOrder === "za") {
-    filtered.sort((a, b) => getSortableName(b.itemName).localeCompare(getSortableName(a.itemName)));
-  }
 
   document.getElementById("visible-count").textContent = filtered.length;
   document.getElementById("total-count").textContent = items.length;
@@ -456,7 +427,7 @@ window.confirmDelete = () => {
   window.closeDeleteModal();
 };
 
-// ---------- Search / filter / sort ----------
+// ---------- Search / filter (original sequence) ----------
 window.handleSearch = (val) => {
   searchQuery = val;
   document.getElementById("clear-search").classList.toggle("hidden", val.trim().length === 0);
@@ -472,11 +443,6 @@ window.clearSearch = () => {
 
 window.setCategoryFilter = (cat) => { activeCategoryFilter = cat; renderCategoryPills(); renderTable(); };
 
-window.setSortOrder = (order) => {
-  activeSortOrder = order;
-  document.getElementById("sort-select").value = order;
-  renderTable();
-};
 
 // ---------- Export ----------
 window.exportCSV = () => {

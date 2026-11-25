@@ -12,12 +12,12 @@ I developed Kirana Rate Board as a mobile-first Progressive Web App (PWA) for ma
 
 I designed the interface to be compact and easy to use on a phone, with offline access to previously cached data and separate viewer and editor permissions.
 
-**Current version:** v2.0 — [Feature version history](FEATURES_VERSION.md)
+**Current version:** v2.1 — [Feature version history](FEATURES_VERSION.md)
 
 ## Key features
 
 - **Multiple rates:** I can store different quantities and whole-rupee prices under one product.
-- **Compact mobile UI:** The first saved rate is displayed by default, with expandable options for products having multiple rates.
+- **Compact mobile UI:** I use a sticky icon-and-search header, smaller category chips, and a bottom item counter. The first saved rate is displayed by default, with expandable options for products having multiple rates. The store icon opens print, sign-out and authorized editing actions.
 - **Smart search:** I implemented Levenshtein-based fuzzy matching and synonyms to support spelling mistakes and English, Hindi and Hinglish searches.
 - **Hindi suggestions:** A local grocery dictionary suggests Hindi names, which can be edited manually.
 - **Real-time synchronization:** Firestore keeps the rate list synchronized across devices.

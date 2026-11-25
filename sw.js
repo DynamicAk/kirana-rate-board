@@ -1,6 +1,6 @@
 // Service worker: caches the app files so the board opens offline.
 // Prices themselves are cached by Firestore, not here.
-const CACHE = "rateboard-v2";
+const CACHE = "rateboard-v2.1";
 const APP_FILES = [
   "./", "./index.html", "./app.js", "./firebase-config.js", "./data/synonyms.js", "./voice.js",
   "./smart-search.js", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png"
