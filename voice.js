@@ -5,8 +5,8 @@ const STOP = new Set([
   "price", "prices", "rate", "rates", "cost", "of", "the", "what", "whats", "is", "how", "much", "does",
   "rupees", "rupee", "per", "kg", "for", "tell", "me", "please", "a", "an", "has",
   "ka", "ke", "ki", "kya", "hai", "hain", "kitna", "kitne", "kitni", "bhav", "bhaav", "daam", "kimat",
-  "bata", "batao", "batana", "do", "dena", "ho", "mein", "se", "aur",
-  "क्या", "है", "हैं", "का", "के", "की", "कितना", "कितने", "कितनी", "भाव", "रेट", "दाम", "कीमत",
+  "show", "find", "search", "give", "want", "check", "bata", "batao", "batana", "do", "dena", "ho", "mein", "se", "aur",
+  "मुझे", "दिखाओ", "बताएं", "चाहिए", "क्या", "है", "हैं", "का", "के", "की", "कितना", "कितने", "कितनी", "भाव", "रेट", "दाम", "कीमत",
   "बता", "बताओ", "बताइए", "बताना", "दो", "प्रति", "किलो", "रुपये", "रुपए", "में", "से", "और"
 ]);
 
