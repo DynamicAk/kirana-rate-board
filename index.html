@@ -262,10 +262,10 @@
                 <!-- Search Box -->
                 <div class="relative flex-1 min-w-0">
                     <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔍</span>
-                    <input type="text" id="search-input" oninput="handleSearch(this.value)" aria-label="Search items in English or Hindi" placeholder="Search items..." class="w-full pl-9 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition">
+                    <input type="text" id="search-input" oninput="handleSearch(this.value)" aria-label="Search items in Hindi, English or Hinglish" placeholder="Search items..." class="w-full pl-9 pr-16 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition">
                     <button id="clear-search" onclick="clearSearch()" class="hidden absolute inset-y-0 right-2.5 flex items-center text-slate-400 hover:text-slate-600 text-sm cursor-pointer" title="Clear search">✕</button>
-                    <button id="lang-btn" type="button" onclick="toggleVoiceLang()" title="Voice language" aria-label="Voice language" class="absolute inset-y-0 right-16 flex items-center text-xs font-bold text-slate-500 hover:text-amber-700 cursor-pointer">हि</button>
-                    <button id="mic-btn" type="button" onclick="startVoice()" title="Search by voice" aria-label="Search by voice" class="absolute inset-y-0 right-9 flex items-center text-base cursor-pointer">🎤</button>
+
+                    <button id="mic-btn" type="button" onclick="startVoice()" title="Search by voice in Hindi or English" aria-label="Search by voice in Hindi or English" class="absolute inset-y-0 right-9 flex items-center text-base cursor-pointer">🎤</button>
                 </div>
             </div>
             <nav id="category-chips" class="category-chips" aria-label="Quick category filters"></nav>

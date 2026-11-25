@@ -12,18 +12,18 @@ I developed Kirana Rate Board as a mobile-first Progressive Web App (PWA) for ma
 
 I designed the interface to be compact and easy to use on a phone, with offline access to previously cached data and separate viewer and editor permissions.
 
-**Current version:** v2.1 — [Feature version history](FEATURES_VERSION.md)
+**Current version:** v2.2 — [Feature version history](FEATURES_VERSION.md)
 
 ## Key features
 
 - **Multiple rates:** I can store different quantities and whole-rupee prices under one product.
 - **Compact mobile UI:** I use a sticky icon-and-search header, smaller category chips, and a bottom item counter. The first saved rate is displayed by default, with expandable options for products having multiple rates. The store icon opens print, sign-out and authorized editing actions.
-- **Smart search:** I implemented Levenshtein-based fuzzy matching and synonyms to support spelling mistakes and English, Hindi and Hinglish searches.
+- **Smart search:** I rank actual catalog products using exact names, curated synonyms, Hindi transliteration and typo-tolerant Damerau-Levenshtein matching. Hindi, English and Hinglish queries use one search box.
 - **Hindi suggestions:** A local grocery dictionary suggests Hindi names, which can be edited manually.
 - **Real-time synchronization:** Firestore keeps the rate list synchronized across devices.
 - **Offline access:** A service worker and Firestore local caching support previously loaded data without internet.
 - **Authentication:** Viewers can read rates, while editors can manage products and prices.
-- **Voice search:** Browser speech recognition supports Hindi and English on compatible browsers.
+- **Voice search:** I use a single microphone button, multiple browser recognition alternatives and catalog relevance. If there is no clear match, the next tap tries the alternate Hindi/English locale automatically. Browser voice recognition still uses one locale per attempt and may need internet.
 - **Export and print:** The app supports CSV export and printing of all quantity-price options.
 
 ## Technology stack
@@ -33,7 +33,7 @@ I designed the interface to be compact and easy to use on a phone, with offline 
 | Frontend | HTML, Tailwind CSS, Vanilla JavaScript |
 | Database | Firebase Cloud Firestore |
 | Authentication | Firebase Authentication and custom role claims |
-| Smart search | Levenshtein edit distance and synonym matching |
+| Smart search | Damerau-Levenshtein, transliteration and ranked synonym matching |
 | Hindi suggestions | Offline grocery-name dictionary |
 | Voice search | Web Speech API |
 | Offline support | Service Worker, PWA, Firestore persistent cache |

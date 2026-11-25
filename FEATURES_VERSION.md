@@ -1,5 +1,11 @@
 # Kirana Rate Board — Feature Versions
 
+## v2.2 — Multilingual ranked search (2026-11-26)
+- **Added:** Catalog-ranked exact, synonym, phonetic/transliterated and typo matches; multiple speech alternatives; automatic alternate recognition language on retry.
+- **Changed:** All query words must match; highest relevance first; original sequence retained for empty search.
+- **Removed:** Manual Hindi/English voice toggle; broad synonym expansion between unrelated products.
+- **Tech:** Vanilla JS, Unicode normalization, Devanagari transliteration, Damerau-Levenshtein edit distance, Web Speech API, PWA. No new paid service.
+
 ## v2.1 — Compact mobile navigation (2026-11-26)
 - **Added:** Store icon menu, top search, bottom-left live item count.
 - **Changed:** Smaller horizontal category chips; editor actions, print and sign-out moved into the menu; service-worker cache refreshed.
