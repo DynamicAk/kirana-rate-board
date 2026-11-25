@@ -108,10 +108,17 @@
         }
         /* Phase 1 mobile accessibility */
         #search-panel { position: sticky; top: 0; z-index: 30; }
-        .category-chips { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; }
-        .category-chip { flex-shrink: 0; min-height: 44px; padding: 10px 14px; border-radius: 999px; border: 1px solid #cbd5e1; background: white; font-weight: 600; }
-        .category-chip[aria-pressed="true"] { background: #92400e; color: white; border-color: #92400e; }
-        #search-input { min-height: 48px; }
+        .category-chips { display: flex; gap: 5px; overflow-x: auto; padding: 7px 0 4px; scrollbar-width: thin; }
+        .category-chip { flex-shrink: 0; min-height: 34px; padding: 5px 10px; border-radius: 999px; border: 1px solid #fed7aa; background: white; color: #334155; font-size: 12px; font-weight: 600; white-space: nowrap; }
+        .category-chip[aria-pressed="true"] { background: #78350f; color: white; border-color: #78350f; }
+        #search-input { min-height: 44px; }
+        .shop-trigger { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #ffffff30; font-size: 23px; cursor: pointer; list-style: none; }
+        .shop-trigger::-webkit-details-marker { display: none; }
+        .shop-dropdown { position: absolute; left: 0; top: calc(100% + 6px); z-index: 40; width: 180px; padding: 5px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 6px 20px #0003; }
+        .shop-dropdown button { display: block; width: 100%; min-height: 44px; text-align: left; padding: 8px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #334155; }
+        .shop-dropdown .hidden { display: none; }
+        .shop-dropdown button:hover, .shop-dropdown button:focus-visible { background: #fff7ed; }
+        #footer-status { position: sticky; bottom: 0; z-index: 20; padding-bottom: max(5px, env(safe-area-inset-bottom)); }
         @media (max-width: 767px) {
           #rate-table tr.item-row { margin: 8px; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px #0001; }
           #rate-table tr.item-row td.col-price > div { font-size: 1.6rem; line-height: 1.3; }
@@ -236,95 +243,35 @@
         </form>
     </div>
 
-    <!-- Top Header -->
-    <header class="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 text-white shadow-md no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <div class="flex items-center gap-3">
-                        <span class="bg-white/20 p-2 rounded-xl text-xl">🏪</span>
-                        <div>
-                            <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Kirana & Grocery Store Rate List</h1>
-                            <p id="header-subtitle" class="text-amber-100 text-xs sm:text-sm mt-0.5">
-                                Single-page rate board • Switch between View & Edit modes anytime
-                            </p>
+    <!-- Compact sticky header -->
+    <header id="search-panel" class="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 shadow-sm no-print">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-2 pb-1">
+            <div class="flex items-center gap-2">
+                <details id="shop-menu" class="relative shrink-0">
+                    <summary class="shop-trigger" aria-label="Store menu" title="Store menu">🏪</summary>
+                    <div class="shop-dropdown">
+                        <button id="mode-edit-btn" type="button" class="hidden" onclick="toggleEditMode(); closeShopMenu()">✏️ Edit Mode</button>
+                        <div id="edit-toolbar-actions" class="hidden">
+                            <button type="button" onclick="closeShopMenu(); addNewRow()">＋ Add Item</button>
+                            <button type="button" onclick="closeShopMenu(); exportCSV()">📊 Export CSV</button>
                         </div>
+                        <button type="button" onclick="closeShopMenu(); window.print()">🖨️ Print</button>
+                        <button id="logout-btn" type="button" onclick="closeShopMenu(); logout()">⎋ Sign out</button>
                     </div>
-                </div>
-
-                <!-- Mode Switcher & Primary Action Toolbar -->
-                <div class="flex flex-wrap items-center gap-2">
-                    <div class="inline-flex bg-amber-900/50 p-1 rounded-xl border border-amber-300/30 w-full sm:w-auto">
-                        <button id="mode-view-btn" onclick="setMode('view')" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-amber-900 shadow-xs transition cursor-pointer">
-                            <span>👁️</span> View Mode
-                        </button>
-                        <button id="mode-edit-btn" onclick="setMode('edit')" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-amber-100 hover:text-white transition cursor-pointer">
-                            <span>✏️</span> Edit Mode
-                        </button>
-                    </div>
-
-                    <div id="edit-toolbar-actions" class="hidden grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button onclick="addNewRow()" class="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 bg-white text-amber-800 hover:bg-amber-50 font-semibold px-3.5 py-2 rounded-xl text-sm shadow-xs transition cursor-pointer">
-                            <span>+</span> Add Item
-                        </button>
-                        <button onclick="exportCSV()" class="inline-flex items-center justify-center gap-1.5 bg-amber-800/60 hover:bg-amber-800 text-white border border-amber-300/30 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
-                            <span>📊</span> Export CSV
-                        </button>
-                                                                    </div>
-
-                    <button id="logout-btn" onclick="logout()" class="inline-flex items-center justify-center gap-1.5 bg-amber-800/60 hover:bg-amber-800 text-white border border-amber-300/30 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
-                        <span>⎋</span> Sign out
-                    </button>
-                    <button onclick="window.print()" class="inline-flex items-center justify-center gap-1.5 bg-amber-800/60 hover:bg-amber-800 text-white border border-amber-300/30 font-medium px-3 py-2 rounded-xl text-xs sm:text-sm transition cursor-pointer">
-                        <span>🖨️</span> Print
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Workspace -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
-
-        <!-- Search, Category Filter & Sort Order Controls -->
-        <div id="search-panel" class="bg-white p-3.5 sm:p-4 rounded-2xl shadow-xs border border-slate-200/90 mb-5 flex flex-col gap-3 no-print">
-            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                </details>
                 <!-- Search Box -->
-                <div class="relative flex-grow">
+                <div class="relative flex-1 min-w-0">
                     <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 text-sm">🔍</span>
-                    <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search English/Hindi (e.g. chilli, sugar, dal, oil, atta)..." class="w-full pl-9 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition">
+                    <input type="text" id="search-input" oninput="handleSearch(this.value)" aria-label="Search items in English or Hindi" placeholder="Search items..." class="w-full pl-9 pr-24 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition">
                     <button id="clear-search" onclick="clearSearch()" class="hidden absolute inset-y-0 right-2.5 flex items-center text-slate-400 hover:text-slate-600 text-sm cursor-pointer" title="Clear search">✕</button>
                     <button id="lang-btn" type="button" onclick="toggleVoiceLang()" title="Voice language" aria-label="Voice language" class="absolute inset-y-0 right-16 flex items-center text-xs font-bold text-slate-500 hover:text-amber-700 cursor-pointer">हि</button>
                     <button id="mic-btn" type="button" onclick="startVoice()" title="Search by voice" aria-label="Search by voice" class="absolute inset-y-0 right-9 flex items-center text-base cursor-pointer">🎤</button>
                 </div>
-
-                <!-- Dropdown Filters: Category & Sort Order -->
-                <div class="grid grid-cols-2 sm:flex items-center gap-2.5">
-                    <div class="relative">
-                        <select id="category-select" onchange="setCategoryFilter(this.value)" aria-label="Filter by category" class="w-full sm:w-52 pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition cursor-pointer">
-                        </select>
-                    </div>
-
-                    <div class="relative">
-                        <select id="sort-select" onchange="setSortOrder(this.value)" aria-label="Sort items" class="w-full sm:w-44 pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition cursor-pointer">
-                            <option value="original">↕️ Original Order</option>
-                            <option value="az">🔤 A → Z Order</option>
-                            <option value="za">🔠 Z → A Order</option>
-                        </select>
-                    </div>
-                </div>
             </div>
-
             <nav id="category-chips" class="category-chips" aria-label="Quick category filters"></nav>
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                <span id="mode-badge" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 whitespace-nowrap">
-                    👁️ Simple View
-                </span>
-                <div class="text-xs font-medium text-slate-600 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl text-center whitespace-nowrap">
-                    Showing <span id="visible-count" class="font-bold text-amber-900">0</span> / <span id="total-count" class="font-bold text-amber-900">0</span>
-                </div>
-            </div>
         </div>
+    </header>
+    <main class="flex-grow max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-4">
 
         <!-- Print-Only Document Title -->
         <div class="hidden print:block mb-4">
@@ -363,11 +310,11 @@
 
     </main>
 
-    <!-- Footer Status Bar -->
-    <footer class="bg-white border-t border-slate-200 py-4 mt-8 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-500">
-            <p id="footer-hint">Simple View Mode active — switch to <strong>Edit Mode</strong> in the top bar to modify prices, categories, or items.</p>
-            <p id="save-status" class="text-slate-500 font-semibold">● Loading…</p>
+    <!-- Compact bottom status bar -->
+    <footer id="footer-status" class="bg-white border-t border-slate-200 pt-1 no-print">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 text-xs text-slate-500">
+            <p class="shrink-0" aria-live="polite">Showing <span id="visible-count" class="font-semibold text-amber-900">0</span> / <span id="total-count" class="font-semibold text-amber-900">0</span></p>
+            <p id="save-status" class="min-w-0 text-right text-slate-500 font-semibold">● Loading…</p>
         </div>
     </footer>
 
