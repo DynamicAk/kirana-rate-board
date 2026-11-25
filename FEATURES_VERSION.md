@@ -1,5 +1,11 @@
 # Kirana Rate Board — Feature Versions
 
+## v2.1 — Compact mobile navigation (2026-11-26)
+- **Added:** Store icon menu, top search, bottom-left live item count.
+- **Changed:** Smaller horizontal category chips; editor actions, print and sign-out moved into the menu; service-worker cache refreshed.
+- **Removed:** Large title/subtitle, standalone View Mode, category and sort dropdowns, Simple View badge; original item sequence remains.
+- **Tech:** HTML, Tailwind CSS, Vanilla JavaScript, service worker/PWA; existing Firebase and fuzzy search retained.
+
 ## v2.0.1 — Documentation (2026-11-24)
 - **Changed:** First-person README with problem statement, features, stack, structure and setup.
 - **Removed:** No application features.
