@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { firebaseConfig } from "./firebase-config.js";
-import { matchesItem, suggestHindi } from "./smart-search.js";
+import { rankItems, chooseTranscript, suggestHindi } from "./smart-search.js";
 import { extractKeywords } from "./voice.js";
 
 const MODE_KEY = "kirana_store_ui_mode_v5";
@@ -244,10 +244,8 @@ function renderTable() {
   const isEdit = currentMode === "edit";
   const q = searchQuery.trim().toLowerCase();
 
-  const filtered = items.filter(entry =>
-    (activeCategoryFilter === "all" || entry.category === activeCategoryFilter) &&
-    matchesItem(entry, q, ratesOf(entry))
-  );
+  const eligible = items.filter(entry => activeCategoryFilter === "all" || entry.category === activeCategoryFilter);
+  const filtered = rankItems(eligible, q, ratesOf).map(result => result.item);
 
   document.getElementById("visible-count").textContent = filtered.length;
   document.getElementById("total-count").textContent = items.length;
@@ -459,49 +457,54 @@ window.exportCSV = () => {
   showToast("CSV exported with all rates","📊");
 };
 
-// ---------- Voice typing (browser's built-in speech recognition, no library) ----------
+// ---------- Voice search: one mic, catalog-aware alternatives ----------
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-let voiceLang = "hi-IN";          // "hi-IN" understands Hindi and Hinglish; "en-IN" for English
 let recognizer = null;
 let listening = false;
-
-window.toggleVoiceLang = () => {
-  voiceLang = voiceLang === "hi-IN" ? "en-IN" : "hi-IN";
-  document.getElementById("lang-btn").textContent = voiceLang === "hi-IN" ? "हि" : "EN";
-  showToast(voiceLang === "hi-IN" ? "Voice: Hindi / Hinglish" : "Voice: English", "🎤");
-};
+let preferredVoiceLang = "hi-IN";
+let nextVoiceLang = preferredVoiceLang;
+const otherLang = lang => lang === "hi-IN" ? "en-IN" : "hi-IN";
 
 window.startVoice = () => {
   if (!SpeechRec) { showToast("Voice search is not supported in this browser", "!"); return; }
   if (listening && recognizer) { recognizer.stop(); return; }
-
   const mic = document.getElementById("mic-btn");
-  recognizer = new SpeechRec();
-  recognizer.lang = voiceLang;
-  recognizer.interimResults = false;
-  recognizer.maxAlternatives = 1;
-
-  recognizer.onstart = () => { listening = true; mic.classList.add("animate-pulse"); showToast("Listening…", "🎤"); };
-  recognizer.onresult = (e) => {
-    const heard = e.results[0][0].transcript.trim();
-    const keywords = extractKeywords(heard);          // "chilli ka rate kya hai" -> "chilli"
-    document.getElementById("search-input").value = keywords;
-    window.handleSearch(keywords);
+  const session = new SpeechRec();
+  recognizer = session;
+  const lang = nextVoiceLang;
+  session.lang = lang;
+  session.interimResults = false;
+  session.maxAlternatives = 5;
+  session.onstart = () => { mic.classList.add("animate-pulse"); showToast("Listening…", "🎤"); };
+  session.onresult = e => {
+    const result = e.results[e.resultIndex];
+    const alternatives = Array.from(result, a => ({ transcript: a.transcript, confidence: a.confidence }));
+    const best = chooseTranscript(alternatives, items, ratesOf, extractKeywords);
+    if (!best) { nextVoiceLang = otherLang(lang); showToast("Tap mic and repeat once", "!"); return; }
+    if (best.score >= 60) {
+      preferredVoiceLang = lang;
+      nextVoiceLang = preferredVoiceLang;
+      if (activeCategoryFilter !== "all" && !rankItems(items.filter(i => i.category === activeCategoryFilter), best.query, ratesOf).some(r => r.score >= 60)) window.setCategoryFilter("all");
+    } else {
+      nextVoiceLang = otherLang(lang);
+      showToast("No clear product match. Tap mic to retry automatically", "!");
+    }
+    document.getElementById("search-input").value = best.query;
+    window.handleSearch(best.query);
   };
-  recognizer.onerror = (e) => {
-    const msg = e.error === "not-allowed" ? "Allow microphone access for this app"
+  session.onerror = e => {
+    if (["no-speech","language-not-supported","nomatch"].includes(e.error)) nextVoiceLang = otherLang(lang);
+    const msg = e.error === "not-allowed" || e.error === "service-not-allowed" ? "Allow microphone access for voice search"
       : e.error === "network" ? "Voice needs internet. Type to search offline."
-      : e.error === "no-speech" ? "Did not hear anything" : "Voice search failed";
+      : e.error === "aborted" ? "Voice search stopped" : "Tap mic and repeat once";
     showToast(msg, "!");
   };
-  recognizer.onend = () => { listening = false; mic.classList.remove("animate-pulse"); };
-  recognizer.start();
+  session.onnomatch = () => { nextVoiceLang = otherLang(lang); showToast("Tap mic and repeat once", "!"); };
+  session.onend = () => { listening = false; mic.classList.remove("animate-pulse"); };
+  listening = true;
+  try { session.start(); } catch (err) { listening = false; mic.classList.remove("animate-pulse"); showToast("Could not start microphone", "!"); }
 };
-
-if (!SpeechRec) {
-  document.getElementById("mic-btn").classList.add("hidden");
-  document.getElementById("lang-btn").classList.add("hidden");
-}
+if (!SpeechRec) document.getElementById("mic-btn").classList.add("hidden");
 
 // ---------- PWA ----------
 if ("serviceWorker" in navigator) {
